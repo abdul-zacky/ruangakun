@@ -183,7 +183,7 @@ export default function Home() {
             href="#cara-order"
             className={`hidden rounded-full px-5 py-2 text-sm font-semibold transition-colors md:inline-flex ${
               navSolid
-                ? "bg-[#3D73B1] text-white hover:bg-[#092A4D]"
+                ? "bg-[#3D73B1] text-white! hover:bg-[#092A4D]"
                 : "border border-white/40 text-white! hover:bg-white/10"
             }`}
           >
@@ -210,13 +210,13 @@ export default function Home() {
           <div className="relative z-20 mx-auto flex max-w-6xl flex-col items-center gap-16 px-6 py-24 md:flex-row md:items-center">
             <div className={`${glassClasses} max-w-xl px-10 py-12 text-[#F9F7F8]`}>
               <span className="inline-flex items-center gap-2 rounded-full border border-[#DBE3F0]/40 bg-[#DBE3F0]/20 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-[#DBE3F0]">
-                Ruang kerja digital terpadu
+                Solusi Akun Sharing #1
               </span>
               <h1 className="mt-6 text-4xl font-bold leading-tight md:text-4xl">
                 Layanan Premium <span className="">Mudah</span> dan <span className="underline">Terjangkau</span>
               </h1>
               <p className="mt-5 text-base leading-relaxed text-[#DBE3F0]">
-                Akses berbagai layanan premium dengan harga bersahabat menggunakan sistem patungan di RuangAkun.
+                Akses berbagai layanan premium harga bersahabat dengan sistem patungan.
               </p>
               <div className="mt-8 flex flex-col gap-4 sm:flex-row">
                 <a
@@ -261,13 +261,13 @@ export default function Home() {
         </section>
 
         <section id="manfaat" className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6">
-          <div className="flex flex-col gap-4 text-center md:text-left">
-            <span className="text-sm font-semibold text-[#3D73B1]">Kenapa RuangAkun</span>
+          <div className="flex flex-col items-center gap-4 text-center">
+            {/* <span className="text-sm font-semibold text-[#3D73B1]">Kenapa RuangAkun</span> */}
             <h2 className="text-3xl font-bold text-[#092A4D] md:text-4xl">
-              Manfaat Utama Untuk Bisnis Anda
+              Untuk Apa Bayar Mahal?
             </h2>
-            <p className="text-base text-[#092A4D]/70">
-              Dari bisnis rintisan hingga korporasi, kami merancang pengalaman manajemen akun yang ringkas, aman, dan kolaboratif.
+            <p className="text-3xl font-semibold text-[#092A4D]/80">
+              RuangAkun Aja!
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-3">
@@ -286,12 +286,12 @@ export default function Home() {
         </section>
 
         <section id="produk" className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6">
-          <div className="flex flex-col gap-4 text-center md:text-left">
+          <div className="flex flex-col items-center gap-4 text-center">
             <span className="text-sm font-semibold text-[#3D73B1]">Paket Produk</span>
             <h2 className="text-3xl font-bold text-[#092A4D] md:text-4xl">
               Sesuaikan Investasi Dengan Skala Anda
             </h2>
-            <p className="text-base text-[#092A4D]/70">
+            <p className="max-w-2xl text-base text-[#092A4D]/70">
               Pilih paket yang langsung melipatgandakan produktivitas tim digital Anda.
             </p>
           </div>
@@ -316,12 +316,12 @@ export default function Home() {
 
         <section id="cara-order" className="relative mx-auto flex w-full max-w-6xl flex-col gap-10 px-6">
           <div className="absolute inset-x-0 top-8 -z-10 h-[85%] rounded-3xl bg-[#DBE3F0]/60 blur-3xl" />
-          <div className="flex flex-col gap-4 text-center md:text-left">
+          <div className="flex flex-col items-center gap-4 text-center">
             <span className="text-sm font-semibold text-[#3D73B1]">Cara Order</span>
             <h2 className="text-3xl font-bold text-[#092A4D] md:text-4xl">
               Langkah Sederhana, Hasil Maksimal
             </h2>
-            <p className="text-base text-[#092A4D]/70">
+            <p className="max-w-2xl text-base text-[#092A4D]/70">
               Tim kami mendampingi setiap tahap implementasi agar transisi terasa mulus bagi seluruh tim.
             </p>
           </div>
@@ -348,12 +348,12 @@ export default function Home() {
         </section>
 
         <section id="transformasi" className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6">
-          <div className="flex flex-col gap-4 text-center md:text-left">
+          <div className="flex flex-col items-center gap-4 text-center">
             <span className="text-sm font-semibold text-[#3D73B1]">Before vs After</span>
             <h2 className="text-3xl font-bold text-[#092A4D] md:text-4xl">
               Transformasi Nyata dalam 30 Hari
             </h2>
-            <p className="text-base text-[#092A4D]/70">
+            <p className="max-w-3xl text-base text-[#092A4D]/70">
               Rasakan perubahan ketika tim Anda berpindah dari pengelolaan serba manual ke RuangAkun.
             </p>
           </div>
