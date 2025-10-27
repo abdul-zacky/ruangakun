@@ -74,9 +74,90 @@ const beforeAfter = {
 };
 
 const products = [
-  { icon: "🚀", name: "Starter Boost", price: "Rp249.000 / bulan" },
-  { icon: "🌐", name: "Growth Orbit", price: "Rp499.000 / bulan" },
-  { icon: "🏢", name: "Enterprise Suite", price: "Hubungi kami" },
+  {
+    image:
+      "https://images.unsplash.com/photo-1523475472560-d2df97ec485c?auto=format&fit=crop&w=160&h=160&q=80",
+    name: "Starter Boost",
+    price: "Rp249.000 / bulan",
+  },
+  {
+    image:
+      "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=160&h=160&q=80",
+    name: "Growth Orbit",
+    price: "Rp399.000 / bulan",
+  },
+  {
+    image:
+      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=160&h=160&q=80",
+    name: "Scale Plus",
+    price: "Rp549.000 / bulan",
+  },
+  {
+    image:
+      "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=160&h=160&q=80",
+    name: "Agency Suite",
+    price: "Rp729.000 / bulan",
+  },
+  {
+    image:
+      "https://images.unsplash.com/photo-1532619187603-db2bc1b59904?auto=format&fit=crop&w=160&h=160&q=80",
+    name: "Enterprise Pro",
+    price: "Rp1.049.000 / bulan",
+  },
+  {
+    image:
+      "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=160&h=160&q=80",
+    name: "Custom White Label",
+    price: "Hubungi kami",
+  },
+];
+
+const testimonials = [
+  {
+    image:
+      "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=960&h=540&q=80",
+    label: "Cuplikan ulasan tim kreatif",
+  },
+  {
+    image:
+      "https://images.unsplash.com/photo-1556740749-887f6717d7e4?auto=format&fit=crop&w=960&h=540&q=80",
+    label: "Review dashboard kolaborasi",
+  },
+  {
+    image:
+      "https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?auto=format&fit=crop&w=960&h=540&q=80",
+    label: "Feedback agensi digital",
+  },
+  {
+    image:
+      "https://images.unsplash.com/photo-1618005198919-d3d4b5a92eee?auto=format&fit=crop&w=960&h=540&q=80",
+    label: "Testimoni tim pemasaran",
+  },
+  {
+    image:
+      "https://images.unsplash.com/photo-1598257006626-48b0c252070d?auto=format&fit=crop&w=960&h=540&q=80",
+    label: "Kesan positif studio desain",
+  },
+  {
+    image:
+      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=960&h=540&q=80",
+    label: "Review migrasi akun klien",
+  },
+  {
+    image:
+      "https://images.unsplash.com/photo-1527689368864-3a821dbccc34?auto=format&fit=crop&w=960&h=540&q=80",
+    label: "Snapshot hasil laporan otomatis",
+  },
+  {
+    image:
+      "https://images.unsplash.com/photo-1545239351-1141bd82e8a6?auto=format&fit=crop&w=960&h=540&q=80",
+    label: "Cuplikan workspace agensi",
+  },
+  {
+    image:
+      "https://images.unsplash.com/photo-1525253086316-d0c936c814f8?auto=format&fit=crop&w=960&h=540&q=80",
+    label: "Hasil kolaborasi kampanye",
+  },
 ];
 
 const glassClasses =
@@ -88,6 +169,7 @@ const blueGlassClasses =
 export default function Home() {
   const [particlesReady, setParticlesReady] = useState(false);
   const [navSolid, setNavSolid] = useState(false);
+  const [activeTestimonial, setActiveTestimonial] = useState(0);
 
   useEffect(() => {
     initParticlesEngine(async (engine) => {
@@ -145,6 +227,24 @@ export default function Home() {
     }),
     []
   );
+
+  const totalTestimonials = testimonials.length;
+  const slidesVisible = 3;
+  const totalGroups = Math.ceil(totalTestimonials / slidesVisible);
+
+  const goPrevTestimonial = () =>
+    setActiveTestimonial((prev) => (prev === 0 ? totalGroups - 1 : prev - 1));
+
+  const goNextTestimonial = () =>
+    setActiveTestimonial((prev) => (prev === totalGroups - 1 ? 0 : prev + 1));
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveTestimonial((prev) => (prev === totalGroups - 1 ? 0 : prev + 1));
+    }, 6000);
+
+    return () => clearInterval(timer);
+  }, [totalGroups]);
 
   return (
     <div className="relative min-h-screen bg-[#F9F7F8] text-[#092A4D]" id="beranda">
@@ -308,18 +408,24 @@ export default function Home() {
                 Pilih paket yang langsung melipatgandakan produktivitas tim digital Anda.
               </p>
             </div>
-            <div className="grid gap-6 md:grid-cols-3">
+            <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
               {products.map((product, index) => (
                 <div
-                  key={`${product.icon}-${index}`}
-                  className={`${glassClasses} flex h-full flex-col items-center gap-6 p-8 text-center`}
+                  key={`${product.name}-${index}`}
+                  className="flex flex-col items-center gap-5 rounded-3xl bg-white/10 p-6 text-center text-white/90 backdrop-blur-md shadow-lg shadow-black/20"
                 >
-                  <span className="text-4xl" aria-hidden>
-                    {product.icon}
-                  </span>
-                  <h3 className="text-lg font-semibold text-[#092A4D]">{product.name}</h3>
-                  <div className="text-base font-medium text-[#092A4D]/70">{product.price}</div>
-                  <button className="rounded-full bg-[#3D73B1] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#092A4D]">
+                  <div className="relative h-16 w-16 overflow-hidden rounded-2xl border border-white/30">
+                    <Image
+                      src={product.image}
+                      alt={product.name}
+                      fill
+                      sizes="64px"
+                      className="object-cover"
+                    />
+                  </div>
+                  <h3 className="text-base font-semibold text-white">{product.name}</h3>
+                  <div className="text-sm font-medium text-white/70">{product.price}</div>
+                  <button className="w-full rounded-full bg-white/90 px-5 py-2 text-sm font-semibold text-[#092A4D] transition-colors hover:bg-white">
                     Detail Paket
                   </button>
                 </div>
@@ -363,6 +469,83 @@ export default function Home() {
                     <p className="mt-2 text-sm leading-relaxed text-[#092A4D]/70">{step.detail}</p>
                   </div>
                 ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section
+          id="testimoni"
+          className="relative w-full overflow-hidden bg-linear-to-br from-[#0A2748] via-[#113B6F] to-[#0A2748] px-6 py-20 text-white"
+        >
+          <div className="pointer-events-none absolute -top-32 left-0 h-80 w-80 rounded-full bg-[#3D73B1]/40 blur-3xl" />
+          <div className="pointer-events-none absolute right-10 bottom-0 h-72 w-72 rounded-full bg-white/20 blur-3xl" />
+          <div className="relative mx-auto flex max-w-6xl flex-col gap-12">
+            <div className="flex flex-col items-center gap-4 text-center">
+              <span className="text-sm font-semibold text-white/80">Cerita Pengguna</span>
+              <h2 className="text-3xl font-bold text-white md:text-4xl">
+                Dipercaya Komunitas Kreatif dan Agency
+              </h2>
+              <p className="max-w-3xl text-base text-white/70">
+                Mereka merapikan operasional digital, memotong biaya tools, dan mempercepat peluncuran kampanye dengan RuangAkun.
+              </p>
+            </div>
+            <div className="relative mx-auto w-full max-w-6xl">
+              <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/10 backdrop-blur-md shadow-[0_25px_60px_rgba(0,0,0,0.35)]">
+                <div
+                  className="flex transition-transform duration-500 ease-out"
+                  style={{ transform: `translateX(-${activeTestimonial * 100}%)` }}
+                >
+                  {testimonials.map((item, index) => (
+                    <div
+                      key={item.image}
+                      className="shrink-0 px-3"
+                      style={{ flexBasis: `${100 / slidesVisible}%` }}
+                    >
+                      <div className="relative h-64 w-full overflow-hidden rounded-2xl border border-white/15">
+                        <Image
+                          src={item.image}
+                          alt={item.label}
+                          fill
+                          sizes="(max-width: 768px) 300px, (max-width: 1200px) 380px, 420px"
+                          className="object-cover"
+                          priority={index < slidesVisible}
+                        />
+                        <span className="sr-only">{item.label}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="mt-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={goPrevTestimonial}
+                    className="flex h-11 w-11 items-center justify-center rounded-full border border-white/30 bg-white/10 text-lg font-semibold text-white transition-colors hover:bg-white/20"
+                    aria-label="Testimoni sebelumnya"
+                  >
+                    &#8592;
+                  </button>
+                  <button
+                    type="button"
+                    onClick={goNextTestimonial}
+                    className="flex h-11 w-11 items-center justify-center rounded-full border border-white/30 bg-white/10 text-lg font-semibold text-white transition-colors hover:bg-white/20"
+                    aria-label="Testimoni berikutnya"
+                  >
+                    &#8594;
+                  </button>
+                </div>
+                <div className="flex items-center justify-center gap-2 md:justify-end">
+                  {Array.from({ length: totalGroups }).map((_, index) => (
+                    <span
+                      key={`dot-${index}`}
+                      className={`h-2 w-2 rounded-full transition-opacity ${
+                        index === activeTestimonial ? "bg-white opacity-100" : "bg-white/40 opacity-60"
+                      }`}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </div>
