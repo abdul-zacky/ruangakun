@@ -192,7 +192,7 @@ export default function Home() {
         </nav>
       </header>
 
-      <main className="flex flex-col gap-24 pb-24">
+  <main className="flex flex-col pb-24">
         <section className="relative overflow-hidden pt-32">
           <div className="absolute inset-0">
             <div className="absolute inset-0 bg-linear-to-br from-[#092A4D] via-[#092A4D] to-[#3D73B1]/60 opacity-90" />
@@ -260,142 +260,171 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="manfaat" className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6">
-          <div className="flex flex-col items-center gap-4 text-center">
-            {/* <span className="text-sm font-semibold text-[#3D73B1]">Kenapa RuangAkun</span> */}
-            <h2 className="text-3xl font-bold text-[#092A4D] md:text-4xl">
-              Untuk Apa Bayar Mahal?
-            </h2>
-            <p className="text-3xl font-semibold text-[#092A4D]/80">
-              RuangAkun Aja!
-            </p>
-          </div>
-          <div className="grid gap-6 md:grid-cols-3">
-            {benefits.map((benefit) => (
-              <div key={benefit.title} className={`${glassClasses} h-full p-8`}> 
-                <span className="text-3xl" aria-hidden>
-                  {benefit.icon}
-                </span>
-                <h3 className="text-xl font-semibold text-[#092A4D]">{benefit.title}</h3>
-                <p className="mt-4 text-sm leading-relaxed text-[#092A4D]/70">
-                  {benefit.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section id="produk" className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6">
-          <div className="flex flex-col items-center gap-4 text-center">
-            <span className="text-sm font-semibold text-[#3D73B1]">Paket Produk</span>
-            <h2 className="text-3xl font-bold text-[#092A4D] md:text-4xl">
-              Sesuaikan Investasi Dengan Skala Anda
-            </h2>
-            <p className="max-w-2xl text-base text-[#092A4D]/70">
-              Pilih paket yang langsung melipatgandakan produktivitas tim digital Anda.
-            </p>
-          </div>
-          <div className="grid gap-6 md:grid-cols-3">
-            {products.map((product, index) => (
-              <div
-                key={`${product.icon}-${index}`}
-                className={`${glassClasses} flex h-full flex-col items-center gap-6 p-8 text-center`}
-              >
-                <span className="text-4xl" aria-hidden>
-                  {product.icon}
-                </span>
-                <h3 className="text-lg font-semibold text-[#092A4D]">{product.name}</h3>
-                <div className="text-base font-medium text-[#092A4D]/70">{product.price}</div>
-                <button className="rounded-full bg-[#3D73B1] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#092A4D]">
-                  Detail Paket
-                </button>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section id="cara-order" className="relative mx-auto flex w-full max-w-6xl flex-col gap-10 px-6">
-          <div className="absolute inset-x-0 top-8 -z-10 h-[85%] rounded-3xl bg-[#DBE3F0]/60 blur-3xl" />
-          <div className="flex flex-col items-center gap-4 text-center">
-            <span className="text-sm font-semibold text-[#3D73B1]">Cara Order</span>
-            <h2 className="text-3xl font-bold text-[#092A4D] md:text-4xl">
-              Langkah Sederhana, Hasil Maksimal
-            </h2>
-            <p className="max-w-2xl text-base text-[#092A4D]/70">
-              Tim kami mendampingi setiap tahap implementasi agar transisi terasa mulus bagi seluruh tim.
-            </p>
-          </div>
-          <div className={`${glassClasses} relative overflow-hidden p-8 md:p-12`}>
-            <span
-              className="pointer-events-none absolute left-7 top-12 bottom-12 w-px bg-white/40"
-              aria-hidden="true"
-            />
-            <div className="flex flex-col gap-10">
-              {steps.map((step, index) => (
-                <div key={step.title} className="relative pl-16">
-                  <div className="absolute left-0 top-0 flex h-12 w-12 items-center justify-center rounded-full bg-[#3D73B1] text-xl text-white shadow-lg shadow-[#092A4D30]">
-                    <span aria-hidden>{step.icon}</span>
-                  </div>
-                  <span className="text-xs font-semibold uppercase tracking-[0.3em] text-[#3D73B1]/80">
-                    Langkah {index + 1}
+        <section
+          id="manfaat"
+          className="relative w-full overflow-hidden bg-linear-to-br from-[#DBE3F0] via-[#F9F7F8] to-[#F9F7F8] px-6 py-20 shadow-inner shadow-[#092A4D0d]"
+        >
+          <div className="pointer-events-none absolute -left-24 top-16 h-72 w-72 rounded-full bg-[#3D73B1]/25 blur-3xl" />
+          <div className="pointer-events-none absolute -right-20 bottom-12 h-64 w-64 rounded-full bg-white/45 blur-3xl" />
+          <div className="relative mx-auto flex max-w-6xl flex-col gap-12">
+            <div className="flex flex-col items-center gap-4 text-center">
+              <span className="text-sm font-semibold text-[#3D73B1]">Kenapa RuangAkun</span>
+              <h2 className="text-3xl font-bold text-[#092A4D] md:text-4xl">
+                Untuk Apa Bayar Mahal?
+              </h2>
+              <p className="text-3xl font-semibold text-[#092A4D]/80">
+                RuangAkun Aja!
+              </p>
+            </div>
+            <div className="grid gap-6 md:grid-cols-3">
+              {benefits.map((benefit) => (
+                <div key={benefit.title} className={`${glassClasses} h-full p-8`}>
+                  <span className="text-3xl" aria-hidden>
+                    {benefit.icon}
                   </span>
-                  <h3 className="mt-2 text-lg font-semibold text-[#092A4D]">{step.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-[#092A4D]/70">{step.detail}</p>
+                  <h3 className="text-xl font-semibold text-[#092A4D]">{benefit.title}</h3>
+                  <p className="mt-4 text-sm leading-relaxed text-[#092A4D]/70">
+                    {benefit.description}
+                  </p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        <section id="transformasi" className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6">
-          <div className="flex flex-col items-center gap-4 text-center">
-            <span className="text-sm font-semibold text-[#3D73B1]">Before vs After</span>
-            <h2 className="text-3xl font-bold text-[#092A4D] md:text-4xl">
-              Transformasi Nyata dalam 30 Hari
-            </h2>
-            <p className="max-w-3xl text-base text-[#092A4D]/70">
-              Rasakan perubahan ketika tim Anda berpindah dari pengelolaan serba manual ke RuangAkun.
-            </p>
-          </div>
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className={`${glassClasses} p-8`}> 
-              <h3 className="text-xl font-semibold text-[#092A4D]">Sebelum</h3>
-              <ul className="mt-4 space-y-3 text-sm text-[#092A4D]/75">
-                {beforeAfter.before.map((item) => (
-                  <li key={item} className="flex items-start gap-3">
-                    <span className="mt-1 inline-flex h-2 w-2 rounded-full bg-[#3D73B1]" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
+        <section
+          id="produk"
+          className="relative w-full overflow-hidden bg-linear-to-br from-[#0B2F52] via-[#123D6A] to-[#3D73B1] px-6 py-20 text-white shadow-inner shadow-[#00000033]"
+        >
+          <div className="pointer-events-none absolute -top-28 right-20 h-64 w-64 rounded-full bg-white/20 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-20 left-10 h-72 w-72 rounded-full bg-[#092A4D]/60 blur-3xl" />
+          <div className="relative mx-auto flex max-w-6xl flex-col gap-12">
+            <div className="flex flex-col items-center gap-4 text-center">
+              <span className="text-sm font-semibold text-white/80">Paket Produk</span>
+              <h2 className="text-3xl font-bold text-white md:text-4xl">
+                Sesuaikan Investasi Dengan Skala Anda
+              </h2>
+              <p className="max-w-2xl text-base text-white/70">
+                Pilih paket yang langsung melipatgandakan produktivitas tim digital Anda.
+              </p>
             </div>
-            <div className={`${blueGlassClasses} p-8 text-white`}>
-              <h3 className="text-xl font-semibold text-white">Sesudah</h3>
-              <ul className="mt-4 space-y-3 text-sm text-white/85">
-                {beforeAfter.after.map((item) => (
-                  <li key={item} className="flex items-start gap-3">
-                    <span className="mt-1 inline-flex h-2 w-2 rounded-full bg-white" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
+            <div className="grid gap-6 md:grid-cols-3">
+              {products.map((product, index) => (
+                <div
+                  key={`${product.icon}-${index}`}
+                  className={`${glassClasses} flex h-full flex-col items-center gap-6 p-8 text-center`}
+                >
+                  <span className="text-4xl" aria-hidden>
+                    {product.icon}
+                  </span>
+                  <h3 className="text-lg font-semibold text-[#092A4D]">{product.name}</h3>
+                  <div className="text-base font-medium text-[#092A4D]/70">{product.price}</div>
+                  <button className="rounded-full bg-[#3D73B1] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#092A4D]">
+                    Detail Paket
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
         </section>
 
-        <section className="mx-auto w-full max-w-6xl px-6">
-          <div className={`${glassClasses} flex flex-col items-center gap-8 px-10 py-12 text-center md:flex-row md:items-center md:justify-between md:text-left`}> 
+        <section
+          id="cara-order"
+          className="relative w-full overflow-hidden bg-linear-to-br from-[#F9F7F8] via-[#DBE3F0]/70 to-[#F9F7F8] px-6 py-20 shadow-inner shadow-[#092A4D0d]"
+        >
+          <div className="pointer-events-none absolute inset-x-0 top-12 -z-10 h-[80%] bg-linear-to-b from-white/60 via-transparent to-transparent" />
+          <div className="pointer-events-none absolute left-12 top-10 h-52 w-52 rounded-full bg-[#3D73B1]/15 blur-3xl" />
+          <div className="pointer-events-none absolute right-0 bottom-0 h-64 w-64 rounded-full bg-[#092A4D]/10 blur-3xl" />
+          <div className="relative mx-auto flex max-w-6xl flex-col gap-12">
+            <div className="flex flex-col items-center gap-4 text-center">
+              <span className="text-sm font-semibold text-[#3D73B1]">Cara Order</span>
+              <h2 className="text-3xl font-bold text-[#092A4D] md:text-4xl">
+                Langkah Sederhana, Hasil Maksimal
+              </h2>
+              <p className="max-w-2xl text-base text-[#092A4D]/70">
+                Tim kami mendampingi setiap tahap implementasi agar transisi terasa mulus bagi seluruh tim.
+              </p>
+            </div>
+            <div className={`${glassClasses} relative overflow-hidden p-8 md:p-12`}>
+              <span
+                className="pointer-events-none absolute left-7 top-12 bottom-12 w-px bg-white/40"
+                aria-hidden="true"
+              />
+              <div className="flex flex-col gap-10">
+                {steps.map((step, index) => (
+                  <div key={step.title} className="relative pl-16">
+                    <div className="absolute left-0 top-0 flex h-12 w-12 items-center justify-center rounded-full bg-[#3D73B1] text-xl text-white shadow-lg shadow-[#092A4D30]">
+                      <span aria-hidden>{step.icon}</span>
+                    </div>
+                    <span className="text-xs font-semibold uppercase tracking-[0.3em] text-[#3D73B1]/80">
+                      Langkah {index + 1}
+                    </span>
+                    <h3 className="mt-2 text-lg font-semibold text-[#092A4D]">{step.title}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-[#092A4D]/70">{step.detail}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section
+          id="transformasi"
+          className="relative w-full overflow-hidden bg-linear-to-br from-[#EFF3F9] via-[#DBE3F0] to-[#C6D6EA] px-6 py-20 shadow-inner shadow-[#092A4D0f]"
+        >
+          <div className="pointer-events-none absolute -top-28 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-white/50 blur-3xl" />
+          <div className="pointer-events-none absolute right-6 bottom-0 h-64 w-64 rounded-full bg-[#3D73B1]/25 blur-3xl" />
+          <div className="relative mx-auto flex max-w-6xl flex-col gap-12">
+            <div className="flex flex-col items-center gap-4 text-center">
+              <span className="text-sm font-semibold text-[#3D73B1]">Before vs After</span>
+              <h2 className="text-3xl font-bold text-[#092A4D] md:text-4xl">
+                Transformasi Nyata dalam 30 Hari
+              </h2>
+              <p className="max-w-3xl text-base text-[#092A4D]/70">
+                Rasakan perubahan ketika tim Anda berpindah dari pengelolaan serba manual ke RuangAkun.
+              </p>
+            </div>
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className={`${glassClasses} p-8`}>
+                <h3 className="text-xl font-semibold text-[#092A4D]">Sebelum</h3>
+                <ul className="mt-4 space-y-3 text-sm text-[#092A4D]/75">
+                  {beforeAfter.before.map((item) => (
+                    <li key={item} className="flex items-start gap-3">
+                      <span className="mt-1 inline-flex h-2 w-2 rounded-full bg-[#3D73B1]" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className={`${blueGlassClasses} p-8 text-white`}>
+                <h3 className="text-xl font-semibold text-white">Sesudah</h3>
+                <ul className="mt-4 space-y-3 text-sm text-white/85">
+                  {beforeAfter.after.map((item) => (
+                    <li key={item} className="flex items-start gap-3">
+                      <span className="mt-1 inline-flex h-2 w-2 rounded-full bg-white" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="relative w-full overflow-hidden bg-linear-to-r from-[#092A4D] via-[#3D73B1] to-[#84A8CF] px-6 py-16 text-white shadow-inner shadow-[#092A4D1a]">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,#ffffff33,transparent_55%)]" />
+          <div className="relative mx-auto flex max-w-6xl flex-col items-center gap-8 text-center md:flex-row md:items-center md:justify-between md:text-left">
             <div className="max-w-2xl">
-              <h3 className="text-2xl font-semibold text-[#092A4D]">
+              <h3 className="text-2xl font-semibold text-white">
                 Siap Mempercepat Pertumbuhan Digital Anda?
               </h3>
-              <p className="mt-4 text-sm leading-relaxed text-[#092A4D]/70">
+              <p className="mt-4 text-sm leading-relaxed text-white/80">
                 Sampaikan tantangan tim Anda, dan kami siapkan demo personal RuangAkun yang relevan dengan industri Anda.
               </p>
             </div>
             <a
               href="mailto:halo@ruangakun.id"
-              className="rounded-full bg-[#092A4D] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#3D73B1]"
+              className="rounded-full bg-white/85 px-6 py-3 text-sm font-semibold text-[#092A4D] transition-colors hover:bg-white"
             >
               Jadwalkan Demo
             </a>
