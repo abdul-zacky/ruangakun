@@ -195,19 +195,19 @@ export default function Home() {
       <main className="flex flex-col gap-24 pb-24">
         <section className="relative overflow-hidden pt-32">
           <div className="absolute inset-0">
+            <div className="absolute inset-0 bg-linear-to-br from-[#092A4D] via-[#092A4D] to-[#3D73B1]/60 opacity-90" />
+            <div className="absolute -right-32 top-24 h-80 w-80 rounded-full bg-[#DBE3F0]/30 blur-3xl" />
+            <div className="absolute -left-20 bottom-0 h-72 w-72 rounded-full bg-[#3D73B1]/20 blur-3xl" />
             {particlesReady && (
               <Particles
                 id="heroParticles"
-                className="h-full w-full"
+                className="absolute inset-0 z-10"
                 canvasClassName="h-full w-full"
                 options={particlesOptions}
               />
             )}
-            <div className="absolute inset-0 bg-linear-to-br from-[#092A4D] via-[#092A4D] to-[#3D73B1]/60 opacity-90" />
-            <div className="absolute -right-32 top-24 h-80 w-80 rounded-full bg-[#DBE3F0]/30 blur-3xl" />
-            <div className="absolute -left-20 bottom-0 h-72 w-72 rounded-full bg-[#3D73B1]/20 blur-3xl" />
           </div>
-          <div className="relative z-10 mx-auto flex max-w-6xl flex-col items-center gap-16 px-6 py-24 md:flex-row md:items-center">
+          <div className="relative z-20 mx-auto flex max-w-6xl flex-col items-center gap-16 px-6 py-24 md:flex-row md:items-center">
             <div className={`${glassClasses} max-w-xl px-10 py-12 text-[#F9F7F8]`}>
               <span className="inline-flex items-center gap-2 rounded-full border border-[#DBE3F0]/40 bg-[#DBE3F0]/20 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-[#DBE3F0]">
                 Ruang kerja digital terpadu
