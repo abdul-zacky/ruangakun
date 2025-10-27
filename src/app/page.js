@@ -212,22 +212,22 @@ export default function Home() {
               <span className="inline-flex items-center gap-2 rounded-full border border-[#DBE3F0]/40 bg-[#DBE3F0]/20 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-[#DBE3F0]">
                 Ruang kerja digital terpadu
               </span>
-              <h1 className="mt-6 text-4xl font-bold leading-tight md:text-5xl">
-                Kelola Akun Digital Tanpa Drama
+              <h1 className="mt-6 text-4xl font-bold leading-tight md:text-4xl">
+                Layanan Premium <span className="">Mudah</span> dan <span className="underline">Terjangkau</span>
               </h1>
               <p className="mt-5 text-base leading-relaxed text-[#DBE3F0]">
-                RuangAkun membantu brand dan agensi merapikan operasional digital dengan dashboard kolaboratif, otomasi rutin, dan analitik yang siap digunakan.
+                Akses berbagai layanan premium dengan harga bersahabat menggunakan sistem patungan di RuangAkun.
               </p>
               <div className="mt-8 flex flex-col gap-4 sm:flex-row">
                 <a
                   href="#produk"
-                  className="rounded-full bg-[#3D73B1] px-6 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-[#F9F7F8] hover:text-[#092A4D]"
+                  className="rounded-full bg-[#3D73B1] px-6 py-3 text-center text-sm font-semibold text-[#F9F7F8]! transition-colors hover:bg-[#F9F7F8] hover:text-[#092A4D]!"
                 >
                   Lihat Paket
                 </a>
                 <a
                   href="#transformasi"
-                  className="rounded-full border border-[#DBE3F0]/50 px-6 py-3 text-center text-sm font-semibold text-[#DBE3F0] transition-colors hover:bg-[#DBE3F0]/20"
+                  className="rounded-full border border-[#DBE3F0]/50 px-6 py-3 text-center text-sm font-semibold text-[#DBE3F0]! transition-colors hover:bg-[#DBE3F0]/20"
                 >
                   Pelajari Transformasi
                 </a>
