@@ -16,16 +16,19 @@ const navigation = [
 
 const benefits = [
   {
+    icon: "🧭",
     title: "Satu Pusat Kendali",
     description:
       "Susun, jadwalkan, dan analisis semua akun digital dalam satu dashboard terpadu.",
   },
   {
+    icon: "🤝",
     title: "Kolaborasi Lancar",
     description:
       "Ajak tim atau klien dengan hak akses granular tanpa repot berbagi password.",
   },
   {
+    icon: "🛡️",
     title: "Keamanan Berlapis",
     description:
       "Lindungi aset digital dengan enkripsi end-to-end dan audit trail realtime.",
@@ -34,18 +37,22 @@ const benefits = [
 
 const steps = [
   {
+    icon: "📝",
     title: "Konsultasi Singkat",
     detail: "Isi formulir kebutuhan dan pilih paket yang paling pas.",
   },
   {
+    icon: "🧩",
     title: "Kurasi Solusi",
     detail: "Tim kami merancang ruang kerja digital sesuai alur bisnis Anda.",
   },
   {
+    icon: "⚙️",
     title: "Implementasi",
     detail: "Kami bantu migrasi data, integrasi, dan pelatihan tim.",
   },
   {
+    icon: "📈",
     title: "Optimalisasi",
     detail: "Monitoring kinerja berkelanjutan dengan laporan otomatis mingguan.",
   },
@@ -67,13 +74,16 @@ const beforeAfter = {
 };
 
 const products = [
-  { icon: "🚀", price: "Rp249.000 / bulan" },
-  { icon: "🌐", price: "Rp499.000 / bulan" },
-  { icon: "🏢", price: "Hubungi kami" },
+  { icon: "🚀", name: "Starter Boost", price: "Rp249.000 / bulan" },
+  { icon: "🌐", name: "Growth Orbit", price: "Rp499.000 / bulan" },
+  { icon: "🏢", name: "Enterprise Suite", price: "Hubungi kami" },
 ];
 
 const glassClasses =
   "rounded-3xl border border-white/30 bg-white/40 backdrop-blur-xl shadow-lg shadow-[#092A4D0d]";
+
+const blueGlassClasses =
+  "rounded-3xl border border-white/40 bg-linear-to-br from-[#3D73B1] via-[#2F5F93] to-[#092A4D] backdrop-blur-xl shadow-lg shadow-[#092A4D26]";
 
 export default function Home() {
   const [particlesReady, setParticlesReady] = useState(false);
@@ -114,23 +124,23 @@ export default function Home() {
         },
       },
       particles: {
-        color: { value: "#3D73B1" },
+        color: { value: "#ffffff" },
         links: {
           enable: true,
-          color: "#DBE3F0",
+          color: "#ffffff",
           distance: 140,
-          opacity: 0.35,
-          width: 1.2,
+          opacity: 0.25,
+          width: 1,
         },
         move: {
           enable: true,
-          speed: 1.1,
+          speed: 0.8,
           direction: "none",
           outModes: { default: "out" },
         },
-        number: { value: 50, density: { enable: true, area: 800 } },
-        opacity: { value: { min: 0.3, max: 0.6 } },
-        size: { value: { min: 2, max: 4 } },
+        number: { value: 140, density: { enable: true, area: 800 } },
+        opacity: { value: { min: 0.18, max: 0.45 } },
+        size: { value: { min: 1.5, max: 3.5 } },
       },
     }),
     []
@@ -149,7 +159,7 @@ export default function Home() {
         >
           <div
             className={`text-lg font-semibold tracking-tight ${
-              navSolid ? "text-[#092A4D]" : "text-[#F9F7F8]"
+              navSolid ? "text-[#092A4D]" : "text-white!"
             }`}
           >
             RuangAkun
@@ -160,7 +170,9 @@ export default function Home() {
                 key={item.href}
                 href={item.href}
                 className={`transition-colors ${
-                  navSolid ? "text-[#092A4D] hover:text-[#3D73B1]" : "text-[#F9F7F8] hover:text-[#DBE3F0]"
+                  navSolid
+                    ? "text-[#092A4D] hover:text-[#3D73B1]"
+                    : "text-white! hover:text-[#DBE3F0]!"
                 }`}
               >
                 {item.label}
@@ -172,7 +184,7 @@ export default function Home() {
             className={`hidden rounded-full px-5 py-2 text-sm font-semibold transition-colors md:inline-flex ${
               navSolid
                 ? "bg-[#3D73B1] text-white hover:bg-[#092A4D]"
-                : "border border-[#F9F7F8]/40 text-[#F9F7F8] hover:bg-[#F9F7F8]/10"
+                : "border border-white/40 text-white! hover:bg-white/10"
             }`}
           >
             Konsultasi Gratis
@@ -261,6 +273,9 @@ export default function Home() {
           <div className="grid gap-6 md:grid-cols-3">
             {benefits.map((benefit) => (
               <div key={benefit.title} className={`${glassClasses} h-full p-8`}> 
+                <span className="text-3xl" aria-hidden>
+                  {benefit.icon}
+                </span>
                 <h3 className="text-xl font-semibold text-[#092A4D]">{benefit.title}</h3>
                 <p className="mt-4 text-sm leading-relaxed text-[#092A4D]/70">
                   {benefit.description}
@@ -289,7 +304,8 @@ export default function Home() {
                 <span className="text-4xl" aria-hidden>
                   {product.icon}
                 </span>
-                <div className="text-xl font-semibold text-[#092A4D]">{product.price}</div>
+                <h3 className="text-lg font-semibold text-[#092A4D]">{product.name}</h3>
+                <div className="text-base font-medium text-[#092A4D]/70">{product.price}</div>
                 <button className="rounded-full bg-[#3D73B1] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#092A4D]">
                   Detail Paket
                 </button>
@@ -309,16 +325,25 @@ export default function Home() {
               Tim kami mendampingi setiap tahap implementasi agar transisi terasa mulus bagi seluruh tim.
             </p>
           </div>
-          <div className="grid gap-6 md:grid-cols-4">
-            {steps.map((step, index) => (
-              <div key={step.title} className={`${glassClasses} relative h-full p-8 pt-12`}> 
-                <div className="absolute -top-6 left-6 flex h-12 w-12 items-center justify-center rounded-full bg-[#3D73B1] text-lg font-bold text-white shadow-lg shadow-[#092A4D30]">
-                  {index + 1}
+          <div className={`${glassClasses} relative overflow-hidden p-8 md:p-12`}>
+            <span
+              className="pointer-events-none absolute left-7 top-12 bottom-12 w-px bg-white/40"
+              aria-hidden="true"
+            />
+            <div className="flex flex-col gap-10">
+              {steps.map((step, index) => (
+                <div key={step.title} className="relative pl-16">
+                  <div className="absolute left-0 top-0 flex h-12 w-12 items-center justify-center rounded-full bg-[#3D73B1] text-xl text-white shadow-lg shadow-[#092A4D30]">
+                    <span aria-hidden>{step.icon}</span>
+                  </div>
+                  <span className="text-xs font-semibold uppercase tracking-[0.3em] text-[#3D73B1]/80">
+                    Langkah {index + 1}
+                  </span>
+                  <h3 className="mt-2 text-lg font-semibold text-[#092A4D]">{step.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-[#092A4D]/70">{step.detail}</p>
                 </div>
-                <h3 className="text-lg font-semibold text-[#092A4D]">{step.title}</h3>
-                <p className="mt-4 text-sm leading-relaxed text-[#092A4D]/70">{step.detail}</p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </section>
 
@@ -344,12 +369,12 @@ export default function Home() {
                 ))}
               </ul>
             </div>
-            <div className={`${glassClasses} border-[#3D73B1]/30 bg-[#DBE3F0]/70 p-8`}> 
-              <h3 className="text-xl font-semibold text-[#092A4D]">Sesudah</h3>
-              <ul className="mt-4 space-y-3 text-sm text-[#092A4D]/75">
+            <div className={`${blueGlassClasses} p-8 text-white`}>
+              <h3 className="text-xl font-semibold text-white">Sesudah</h3>
+              <ul className="mt-4 space-y-3 text-sm text-white/85">
                 {beforeAfter.after.map((item) => (
                   <li key={item} className="flex items-start gap-3">
-                    <span className="mt-1 inline-flex h-2 w-2 rounded-full bg-[#092A4D]" />
+                    <span className="mt-1 inline-flex h-2 w-2 rounded-full bg-white" />
                     <span>{item}</span>
                   </li>
                 ))}
