@@ -7,6 +7,13 @@
   --color-secondary: #3d73b1;
   --color-soft: #dbe3f0;
   --color-contrast: #ffffff;
+  --font-size-p: clamp(1rem, 0.9rem + 0.35vw, 1.2rem);
+  --font-size-h6: clamp(1.15rem, 1rem + 0.45vw, 1.4rem);
+  --font-size-h5: clamp(1.3rem, 1.1rem + 0.55vw, 1.6rem);
+  --font-size-h4: clamp(1.55rem, 1.2rem + 0.65vw, 1.9rem);
+  --font-size-h3: clamp(1.8rem, 1.3rem + 0.75vw, 2.2rem);
+  --font-size-h2: clamp(2.1rem, 1.4rem + 0.85vw, 2.6rem);
+  --font-size-h1: clamp(2.4rem, 1.5rem + 1vw, 3rem);
 }
 
 @theme inline {
@@ -32,4 +39,39 @@ a {
 
 a:hover {
   color: var(--color-primary);
+}
+
+p {
+  font-size: var(--font-size-p) !important;
+  line-height: 1.7;
+}
+
+h6 {
+  font-size: var(--font-size-h6) !important;
+  line-height: 1.5;
+}
+
+h5 {
+  font-size: var(--font-size-h5) !important;
+  line-height: 1.45;
+}
+
+h4 {
+  font-size: var(--font-size-h4) !important;
+  line-height: 1.35;
+}
+
+h3 {
+  font-size: var(--font-size-h3) !important;
+  line-height: 1.25;
+}
+
+h2 {
+  font-size: var(--font-size-h2) !important;
+  line-height: 1.15;
+}
+
+h1 {
+  font-size: var(--font-size-h1) !important;
+  line-height: 1.1;
 }
