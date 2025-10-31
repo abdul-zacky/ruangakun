@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import Particles, { initParticlesEngine } from "@tsparticles/react";
 import { loadSlim } from "@tsparticles/slim";
@@ -74,9 +75,12 @@ const beforeAfter = {
 };
 
 const products = [
-  { icon: "🚀", name: "Starter Boost", price: "Rp249.000 / bulan" },
-  { icon: "🌐", name: "Growth Orbit", price: "Rp499.000 / bulan" },
-  { icon: "🏢", name: "Enterprise Suite", price: "Hubungi kami" },
+  { icon: "🎬", name: "Netflix", price: "Mulai Rp17.000", slug: "netflix" },
+  { icon: "�", name: "Spotify Premium", price: "Mulai Rp12.000", slug: "spotify" },
+  { icon: "▶️", name: "YouTube Premium", price: "Mulai Rp15.000", slug: "youtube" },
+  { icon: "�", name: "Disney+ Hotstar", price: "Mulai Rp15.000", slug: "disney" },
+  { icon: "🎨", name: "Canva Pro", price: "Mulai Rp25.000", slug: "canva" },
+  { icon: "📺", name: "VIU Premium", price: "Mulai Rp12.000", slug: "viu" },
 ];
 
 const glassClasses =
@@ -287,12 +291,12 @@ export default function Home() {
 
         <section id="produk" className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6">
           <div className="flex flex-col gap-4 text-center md:text-left">
-            <span className="text-sm font-semibold text-[#3D73B1]">Paket Produk</span>
+            <span className="text-sm font-semibold text-[#3D73B1]">Produk Premium</span>
             <h2 className="text-3xl font-bold text-[#092A4D] md:text-4xl">
-              Sesuaikan Investasi Dengan Skala Anda
+              Nikmati Layanan Premium dengan Harga Terjangkau
             </h2>
             <p className="text-base text-[#092A4D]/70">
-              Pilih paket yang langsung melipatgandakan produktivitas tim digital Anda.
+              Akses semua platform favorit Anda dengan harga hemat. Akun private, aman, dan garansi 100%.
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-3">
@@ -306,9 +310,12 @@ export default function Home() {
                 </span>
                 <h3 className="text-lg font-semibold text-[#092A4D]">{product.name}</h3>
                 <div className="text-base font-medium text-[#092A4D]/70">{product.price}</div>
-                <button className="rounded-full bg-[#3D73B1] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#092A4D]">
-                  Detail Paket
-                </button>
+                <Link 
+                  href={`/order?package=${product.slug}`}
+                  className="rounded-full bg-[#3D73B1] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#092A4D]"
+                >
+                  Pesan
+                </Link>
               </div>
             ))}
           </div>
