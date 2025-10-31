@@ -76,40 +76,58 @@ const beforeAfter = {
 
 const products = [
   {
-    image:
-      "https://images.unsplash.com/photo-1523475472560-d2df97ec485c?auto=format&fit=crop&w=160&h=160&q=80",
-    name: "Starter Boost",
-    price: "Rp249.000 / bulan",
+    image: "https://cdn.cdnlogo.com/logos/n/80/netflix.svg",
+    name: "Netflix",
+    price: "Mulai Rp17.000",
+    slug: "netflix",
   },
   {
-    image:
-      "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=160&h=160&q=80",
-    name: "Growth Orbit",
-    price: "Rp399.000 / bulan",
+    image: "https://cdn.cdnlogo.com/logos/s/89/spotify.svg",
+    name: "Spotify Premium",
+    price: "Mulai Rp12.000",
+    slug: "spotify",
   },
   {
-    image:
-      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=160&h=160&q=80",
-    name: "Scale Plus",
-    price: "Rp549.000 / bulan",
+    image: "https://cdn.cdnlogo.com/logos/y/59/youtube.svg",
+    name: "YouTube Premium",
+    price: "Mulai Rp15.000",
+    slug: "youtube",
   },
   {
-    image:
-      "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=160&h=160&q=80",
-    name: "Agency Suite",
-    price: "Rp729.000 / bulan",
+    image: "https://cdn.cdnlogo.com/logos/c/80/canva.svg",
+    name: "Canva Pro",
+    price: "Mulai Rp25.000",
+    slug: "canva",
   },
   {
-    image:
-      "https://images.unsplash.com/photo-1532619187603-db2bc1b59904?auto=format&fit=crop&w=160&h=160&q=80",
-    name: "Enterprise Pro",
-    price: "Rp1.049.000 / bulan",
+    image: "https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg",
+    name: "ChatGPT Plus",
+    price: "Mulai Rp90.000",
+    slug: "chatgpt",
   },
   {
-    image:
-      "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=160&h=160&q=80",
-    name: "Custom White Label",
-    price: "Hubungi kami",
+    image: "https://cdn.cdnlogo.com/logos/d/48/disney.svg",
+    name: "Disney+ Hotstar",
+    price: "Mulai Rp15.000",
+    slug: "disney",
+  },
+  {
+    image: "https://cdn.cdnlogo.com/logos/v/97/viu.svg",
+    name: "VIU Premium",
+    price: "Mulai Rp12.000",
+    slug: "viu",
+  },
+  {
+    image: "https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_music_icon.svg",
+    name: "YouTube Music",
+    price: "Mulai Rp10.000",
+    slug: "youtube-music",
+  },
+  {
+    image: "https://cdn.cdnlogo.com/logos/a/43/adobe-creative-cloud.svg",
+    name: "Adobe Creative Cloud",
+    price: "Mulai Rp150.000",
+    slug: "adobe",
   },
 ];
 
@@ -401,34 +419,37 @@ export default function Home() {
           <div className="pointer-events-none absolute -bottom-20 left-10 h-72 w-72 rounded-full bg-[#092A4D]/60 blur-3xl" />
           <div className="relative mx-auto flex max-w-6xl flex-col gap-12">
             <div className="flex flex-col items-center gap-4 text-center">
-              <span className="text-sm font-semibold text-white/80">Paket Produk</span>
+              <span className="text-sm font-semibold text-white/80">Produk Premium</span>
               <h2 className="text-3xl font-bold text-white md:text-4xl">
-                Sesuaikan Investasi Dengan Skala Anda
+                Nikmati Layanan Premium dengan Harga Terjangkau
               </h2>
               <p className="max-w-2xl text-base text-white/70">
-                Pilih paket yang langsung melipatgandakan produktivitas tim digital Anda.
+                Akses semua platform favorit Anda dengan harga hemat. Akun private, aman, dan garansi 100%.
               </p>
             </div>
-            <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
+            <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               {products.map((product, index) => (
                 <div
                   key={`${product.name}-${index}`}
-                  className="flex flex-col items-center gap-5 rounded-3xl bg-white/10 p-6 text-center text-white/90 backdrop-blur-md shadow-lg shadow-black/20"
+                  className="flex flex-col items-center gap-5 rounded-3xl bg-white/10 p-6 text-center text-white/90 backdrop-blur-md shadow-lg shadow-black/20 transition-transform hover:scale-105"
                 >
-                  <div className="relative h-16 w-16 overflow-hidden rounded-2xl border border-white/30">
+                  <div className="relative h-16 w-16 overflow-hidden rounded-2xl border border-white/30 bg-white p-2">
                     <Image
                       src={product.image}
                       alt={product.name}
                       fill
                       sizes="64px"
-                      className="object-cover"
+                      className="object-contain"
                     />
                   </div>
                   <h3 className="text-base font-semibold text-white">{product.name}</h3>
                   <div className="text-sm font-medium text-white/70">{product.price}</div>
-                  <button className="w-full rounded-full bg-white/90 px-5 py-2 text-sm font-semibold text-[#092A4D] transition-colors hover:bg-white">
-                    Detail Paket
-                  </button>
+                  <Link 
+                    href={`/order?package=${product.slug}`}
+                    className="w-full rounded-full bg-white/90 px-5 py-2 text-sm font-semibold text-[#092A4D] transition-colors hover:bg-white text-center"
+                  >
+                    Pesan
+                  </Link>
                 </div>
               ))}
             </div>
