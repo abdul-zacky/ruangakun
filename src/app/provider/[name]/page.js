@@ -297,6 +297,7 @@ export default function ProviderPage() {
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
+    email: "",
   });
   const [ruangan, setRuangan] = useState([]);
 
@@ -342,9 +343,7 @@ export default function ProviderPage() {
             slot_number,
             cookie_user_id,
             payment_id,
-            cookie_user (
-              full_name
-            )
+            member_name
           )
         `)
         .eq('provider_id', provider.id)
@@ -365,11 +364,13 @@ export default function ProviderPage() {
   useEffect(() => {
     const savedName = getCookie("user_name");
     const savedPhone = getCookie("user_phone");
+    const savedEmail = getCookie("user_email");
 
-    if (savedName || savedPhone) {
+    if (savedName || savedPhone || savedEmail) {
       setFormData({
         name: savedName || "",
         phone: savedPhone || "",
+        email: savedEmail || "",
       });
       setSaveInfo(true);
     }
@@ -393,12 +394,15 @@ export default function ProviderPage() {
 
   // Generate pricing options based on provider's min_user and max_user
   const pricingOptions = [];
+  // Use recommended_count if set, otherwise default to max_user
+  const recommendedCount = provider.recommended_count || provider.max_user;
+
   for (let users = provider.min_user; users <= provider.max_user; users++) {
     pricingOptions.push({
       users,
       price: calculatePriceFormatted(provider.base_price, users, provider.max_user, provider.admin_price).replace('Rp', ''),
       duration: provider.duration,
-      recommended: users === provider.max_user // Recommend max users for best price
+      recommended: users === recommendedCount
     });
   }
 
@@ -426,16 +430,37 @@ export default function ProviderPage() {
     setShowPopup(false);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Save to cookies if checkbox is checked
     if (saveInfo) {
       setCookie("user_name", formData.name);
       setCookie("user_phone", formData.phone);
+      setCookie("user_email", formData.email);
+
+      // Save to database cookie_user entry
+      const ruangAkunId = getCookie("RuangAkunID");
+      if (ruangAkunId) {
+        try {
+          await fetch("/api/user/update-info", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              userId: ruangAkunId,
+              fullName: formData.name,
+              whatsappNumber: formData.phone,
+              email: formData.email,
+            }),
+          });
+        } catch (error) {
+          console.error("Failed to save user info to database:", error);
+        }
+      }
     } else {
       setCookie("user_name", "", -1);
       setCookie("user_phone", "", -1);
+      setCookie("user_email", "", -1);
     }
 
     // Prepare order data
@@ -609,11 +634,6 @@ export default function ProviderPage() {
                     </span>
                     <span className="text-sm font-semibold text-[#092A4D]">
                       {pricingBreakdown.scaledAdminPriceFormatted}
-                      {pricingBreakdown.increasePercentage > 0 && (
-                        <span className="text-xs text-[#092A4D]/60 ml-1">
-                          (+{pricingBreakdown.increasePercentage}%)
-                        </span>
-                      )}
                     </span>
                   </div>
                   <div className="h-px bg-[#092A4D]/10"></div>
@@ -792,7 +812,7 @@ export default function ProviderPage() {
                                   {member.slot_number}
                                 </span>
                                 <span className="text-[#092A4D]">
-                                  {member.cookie_user?.full_name || `User ${member.slot_number}`}
+                                  {member.member_name || `User ${member.slot_number}`}
                                 </span>
                                 <span className="text-green-500">✓</span>
                               </div>
@@ -824,9 +844,65 @@ export default function ProviderPage() {
                       </div>
                     );
                   })
+                ) : activeTab === "tersedia" ? (
+                  // Show empty room placeholder when no tersedia rooms exist
+                  <div className="rounded-2xl border-2 border-[#DBE3F0]/30 bg-[#F9F7F8] p-6 transition-all hover:border-[#3D73B1]/30 hover:shadow-md">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-4">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#3D73B1] to-[#092A4D] text-xl font-bold text-white shadow-md">
+                          <Users className="w-7 h-7" />
+                        </div>
+                        <div>
+                          <div className="font-semibold text-[#092A4D] text-lg">
+                            Ruangan Baru
+                          </div>
+                          <div className="text-sm text-[#092A4D]/60">
+                            {pricePerUser}/user • {selectedUserCount} user
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm text-[#092A4D]/60 mb-1">
+                          Slot tersedia
+                        </div>
+                        <div className="text-lg font-bold text-[#3D73B1]">
+                          {selectedUserCount}/{selectedUserCount}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Empty Members List */}
+                    <div className="rounded-xl bg-white border border-[#DBE3F0]/30 p-4 mb-4">
+                      <div className="mb-3 text-xs font-semibold text-[#092A4D]/60">
+                        Anggota (0/{selectedUserCount}):
+                      </div>
+                      <div className="space-y-2">
+                        {Array.from({ length: selectedUserCount }).map((_, idx) => (
+                          <div
+                            key={`empty-${idx}`}
+                            className="flex items-center gap-2 text-sm"
+                          >
+                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#DBE3F0]/50 border border-[#DBE3F0] text-xs font-semibold text-[#092A4D]/40">
+                              {idx + 1}
+                            </span>
+                            <span className="italic text-[#092A4D]/40">
+                              Tersedia
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={handleOpenPopup}
+                      className="w-full rounded-full bg-gradient-to-r from-[#3D73B1] to-[#092A4D] px-6 py-3 text-center font-semibold text-white transition-all hover:opacity-90 hover:shadow-lg"
+                    >
+                      Buat Ruangan & Gabung
+                    </button>
+                  </div>
                 ) : (
                   <div className="text-center py-12 text-[#092A4D]/60">
-                    Belum ada ruangan {activeTab === "tersedia" ? "tersedia" : "penuh"}
+                    Belum ada ruangan penuh
                   </div>
                 )}
               </div>
@@ -962,6 +1038,25 @@ export default function ProviderPage() {
                   onChange={handleChange}
                   className="w-full rounded-xl border border-[#092A4D]/20 bg-white px-4 py-3 text-[#092A4D] placeholder-[#092A4D]/40 transition-all focus:border-[#3D73B1] focus:outline-none focus:ring-2 focus:ring-[#3D73B1]/20"
                   placeholder="08123456789"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="email"
+                  className="mb-2 block text-sm font-semibold text-[#092A4D]"
+                >
+                  Email <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  required
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="w-full rounded-xl border border-[#092A4D]/20 bg-white px-4 py-3 text-[#092A4D] placeholder-[#092A4D]/40 transition-all focus:border-[#3D73B1] focus:outline-none focus:ring-2 focus:ring-[#3D73B1]/20"
+                  placeholder="nama@email.com"
                 />
               </div>
 

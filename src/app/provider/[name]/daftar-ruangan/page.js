@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Tag, Calendar, Users } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { calculatePriceFormatted } from "@/lib/pricing";
 
 // Data produk (sama seperti di provider page)
 const products = {
@@ -276,75 +278,139 @@ const products = {
   },
 };
 
+// Cookie helpers - moved outside component to avoid hoisting issues
+const setCookie = (name, value, days = 365) => {
+  const expires = new Date(Date.now() + days * 864e5).toUTCString();
+  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/`;
+};
+
+const getCookie = (name) => {
+  if (typeof document === "undefined") return "";
+  return document.cookie.split("; ").reduce((r, v) => {
+    const parts = v.split("=");
+    return parts[0] === name ? decodeURIComponent(parts[1]) : r;
+  }, "");
+};
+
 export default function DaftarRuanganPage() {
   const params = useParams();
   const router = useRouter();
   const productSlug = params.name;
-  const product = products[productSlug];
 
+  const [provider, setProvider] = useState(null);
+  const [ruangan, setRuangan] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedUserCount, setSelectedUserCount] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
   const [saveInfo, setSaveInfo] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
+    email: "",
   });
 
-  // Redirect if product not found
+  // Fetch provider data from database
   useEffect(() => {
-    if (!product) {
-      router.push("/");
-      return;
-    }
+    const fetchProvider = async () => {
+      setLoading(true);
 
-    // Set default selected user count to recommended option
-    const recommended = product.pricing.find(p => p.recommended);
-    if (recommended) {
-      setSelectedUserCount(recommended.users);
-    } else {
-      setSelectedUserCount(product.pricing[0].users);
-    }
+      const { data, error } = await supabase
+        .from('provider')
+        .select('*')
+        .eq('slug', productSlug)
+        .single();
 
-    // Load saved info from cookies
+      if (error || !data) {
+        console.error('Error fetching provider:', error);
+        router.push('/');
+        return;
+      }
+
+      setProvider(data);
+
+      // Set default selected user count to recommended or max
+      setSelectedUserCount(data.recommended_count || data.max_user);
+
+      setLoading(false);
+    };
+
+    fetchProvider();
+  }, [productSlug, router]);
+
+  // Fetch ruangan for this provider
+  useEffect(() => {
+    if (!provider) return;
+
+    const fetchRuangan = async () => {
+      const { data, error } = await supabase
+        .from('ruangan')
+        .select(`
+          *,
+          ruangan_users (
+            id,
+            slot_number,
+            cookie_user_id,
+            payment_id,
+            member_name
+          )
+        `)
+        .eq('provider_id', provider.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching ruangan:', error);
+        return;
+      }
+
+      setRuangan(data || []);
+    };
+
+    fetchRuangan();
+  }, [provider]);
+
+  // Load saved info from cookies
+  useEffect(() => {
     const savedName = getCookie("user_name");
     const savedPhone = getCookie("user_phone");
+    const savedEmail = getCookie("user_email");
 
-    if (savedName || savedPhone) {
+    if (savedName || savedPhone || savedEmail) {
       setFormData({
         name: savedName || "",
         phone: savedPhone || "",
+        email: savedEmail || "",
       });
       setSaveInfo(true);
     }
-  }, [product, router]);
+  }, []);
 
-  if (!product) {
-    return null;
+  if (loading || !provider) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-[#092A4D]">Loading...</div>
+      </div>
+    );
   }
 
-  // Get current price based on selected user count
-  const currentPricing = product.pricing.find(p => p.users === selectedUserCount) || product.pricing[0];
+  // Calculate current price based on selected user count
+  const currentPrice = calculatePriceFormatted(
+    provider.base_price,
+    selectedUserCount,
+    provider.max_user,
+    provider.admin_price
+  );
 
-  // Filter groups based on selected user count
-  const availableGroups = product.groups
-    .filter(group => group.userCount === selectedUserCount && !group.isFull);
+  // Filter ruangan based on selected user count and availability
+  // Tersedia: rooms that match the selected user count AND have available slots (not full yet)
+  const availableRuangan = ruangan.filter(room =>
+    room.user_count < selectedUserCount && room.status === 'tersedia'
+  );
 
-  const fullGroups = product.groups
-    .filter(group => group.userCount === selectedUserCount && group.isFull);
-
-  // Cookie helpers
-  const setCookie = (name, value, days = 365) => {
-    const expires = new Date(Date.now() + days * 864e5).toUTCString();
-    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/`;
-  };
-
-  const getCookie = (name) => {
-    if (typeof document === "undefined") return "";
-    return document.cookie.split("; ").reduce((r, v) => {
-      const parts = v.split("=");
-      return parts[0] === name ? decodeURIComponent(parts[1]) : r;
-    }, "");
-  };
+  // Penuh: rooms that match the selected user count AND are at full capacity
+  // Note: We show both 'penuh' (full but not active) and 'aktif' (full and active)
+  const fullRuangan = ruangan.filter(room =>
+    room.user_count === selectedUserCount && (room.status === 'penuh' || room.status === 'aktif')
+  );
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -359,25 +425,56 @@ export default function DaftarRuanganPage() {
     setShowPopup(false);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Save to cookies if checkbox is checked
     if (saveInfo) {
       setCookie("user_name", formData.name);
       setCookie("user_phone", formData.phone);
+      setCookie("user_email", formData.email);
+
+      // Save to database cookie_user entry
+      const ruangAkunId = getCookie("RuangAkunID");
+      if (ruangAkunId) {
+        try {
+          await fetch("/api/user/update-info", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              userId: ruangAkunId,
+              fullName: formData.name,
+              whatsappNumber: formData.phone,
+              email: formData.email,
+            }),
+          });
+        } catch (error) {
+          console.error("Failed to save user info to database:", error);
+        }
+      }
     } else {
       setCookie("user_name", "", -1);
       setCookie("user_phone", "", -1);
+      setCookie("user_email", "", -1);
     }
 
     // Prepare order data
+    const pricePerUser = calculatePriceFormatted(
+      provider.base_price,
+      selectedUserCount,
+      provider.max_user,
+      provider.admin_price
+    ).replace('Rp', '').replace(/\./g, '');
+
     const orderData = {
-      product: product.name,
+      product: provider.name,
       productSlug: productSlug,
+      providerId: provider.id,
       userCount: selectedUserCount,
-      pricePerUser: currentPricing.price,
-      totalPrice: currentPricing.price,
+      pricePerUser: pricePerUser,
+      totalPrice: pricePerUser,
+      basePrice: provider.base_price,
+      adminPrice: provider.admin_price,
       customer: formData,
       timestamp: new Date().toISOString(),
     };
@@ -432,31 +529,45 @@ export default function DaftarRuanganPage() {
         <div className="mx-auto max-w-6xl px-6">
           <div className="flex flex-col md:flex-row items-center gap-8">
             {/* Product Icon/Logo */}
-            <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-[#3D73B1] to-[#092A4D] text-5xl shadow-lg">
-              {product.icon}
+            <div className="flex h-24 w-24 items-center justify-center rounded-3xl border border-[#DBE3F0] bg-white p-4 shadow-lg overflow-hidden">
+              {provider.icon && (
+                <img
+                  src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/provider-icons/${provider.icon}`}
+                  alt={provider.name}
+                  className="w-full h-full object-contain"
+                />
+              )}
             </div>
 
             {/* Product Info */}
             <div className="flex-1 text-center md:text-left">
               <h1 className="text-4xl font-bold text-[#092A4D] md:text-5xl">
-                Daftar Ruangan {product.name}
+                Daftar Ruangan {provider.name}
               </h1>
 
               {/* User Count Selector */}
               <div className="mt-6 flex flex-wrap justify-center md:justify-start gap-3">
-                {product.pricing.map((option) => (
-                  <button
-                    key={option.users}
-                    onClick={() => setSelectedUserCount(option.users)}
-                    className={`rounded-full px-6 py-2.5 text-sm font-semibold transition-all ${
-                      selectedUserCount === option.users
-                        ? "bg-gradient-to-r from-[#3D73B1] to-[#092A4D] text-white shadow-lg"
-                        : "bg-[#DBE3F0]/50 text-[#092A4D] hover:bg-[#DBE3F0]"
-                    }`}
-                  >
-                    {option.users} User - Rp{option.price}
-                  </button>
-                ))}
+                {Array.from({ length: provider.max_user - provider.min_user + 1 }, (_, i) => provider.min_user + i).map((userCount) => {
+                  const price = calculatePriceFormatted(
+                    provider.base_price,
+                    userCount,
+                    provider.max_user,
+                    provider.admin_price
+                  );
+                  return (
+                    <button
+                      key={userCount}
+                      onClick={() => setSelectedUserCount(userCount)}
+                      className={`rounded-full px-6 py-2.5 text-sm font-semibold transition-all ${
+                        selectedUserCount === userCount
+                          ? "bg-gradient-to-r from-[#3D73B1] to-[#092A4D] text-white shadow-lg"
+                          : "bg-[#DBE3F0]/50 text-[#092A4D] hover:bg-[#DBE3F0]"
+                      }`}
+                    >
+                      {userCount} User - {price}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -468,84 +579,95 @@ export default function DaftarRuanganPage() {
         {/* Ruangan Tersedia */}
         <div className="mb-16">
           <h2 className="text-2xl font-bold text-[#092A4D] mb-6">
-            Ruangan Tersedia ({availableGroups.length})
+            Ruangan Tersedia ({availableRuangan.length})
           </h2>
 
-          {availableGroups.length > 0 ? (
+          {availableRuangan.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2">
-              {availableGroups.map((group) => (
-                <div
-                  key={group.id}
-                  className="rounded-2xl border-2 border-[#DBE3F0]/30 bg-[#F9F7F8] p-6 transition-all hover:border-[#3D73B1]/30 hover:shadow-md"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-4">
-                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#3D73B1] to-[#092A4D] text-xl font-bold text-white shadow-md">
-                        {group.id}
-                      </div>
-                      <div>
-                        <div className="font-semibold text-[#092A4D] text-lg">
-                          {group.name}
-                        </div>
-                        <div className="text-sm text-[#092A4D]/60">
-                          Rp{group.pricePerUser}/user • {group.userCount} user
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm text-[#092A4D]/60 mb-1">
-                        Slot tersedia
-                      </div>
-                      <div className="text-lg font-bold text-[#3D73B1]">
-                        {group.availableSlots}/{group.totalSlots}
-                      </div>
-                    </div>
-                  </div>
+              {availableRuangan.map((room) => {
+                const members = room.ruangan_users || [];
+                const availableSlots = selectedUserCount - room.user_count;
+                const pricePerUser = calculatePriceFormatted(
+                  provider.base_price,
+                  selectedUserCount,
+                  provider.max_user,
+                  provider.admin_price
+                );
 
-                  {/* Members List */}
-                  <div className="rounded-xl bg-white border border-[#DBE3F0]/30 p-4 mb-4">
-                    <div className="mb-3 text-xs font-semibold text-[#092A4D]/60">
-                      Anggota ({group.totalSlots - group.availableSlots}/{group.totalSlots}):
-                    </div>
-                    <div className="space-y-2">
-                      {group.members.map((member, idx) => (
-                        <div
-                          key={idx}
-                          className="flex items-center gap-2 text-sm"
-                        >
-                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-green-500 text-xs font-semibold text-white">
-                            {idx + 1}
-                          </span>
-                          <span className="text-[#092A4D]">{member}</span>
-                          <span className="text-green-500">✓</span>
+                return (
+                  <div
+                    key={room.id}
+                    className="rounded-2xl border-2 border-[#DBE3F0]/30 bg-[#F9F7F8] p-6 transition-all hover:border-[#3D73B1]/30 hover:shadow-md"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-4">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#3D73B1] to-[#092A4D] text-xl font-bold text-white shadow-md">
+                          <Users className="w-6 h-6" />
                         </div>
-                      ))}
-                      {Array.from({ length: group.availableSlots }).map(
-                        (_, idx) => (
+                        <div>
+                          <div className="font-semibold text-[#092A4D] text-lg">
+                            Ruangan #{room.id.slice(0, 8)}
+                          </div>
+                          <div className="text-sm text-[#092A4D]/60">
+                            {pricePerUser}/user • {selectedUserCount} user
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm text-[#092A4D]/60 mb-1">
+                          Slot tersedia
+                        </div>
+                        <div className="text-lg font-bold text-[#3D73B1]">
+                          {availableSlots}/{selectedUserCount}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Members List */}
+                    <div className="rounded-xl bg-white border border-[#DBE3F0]/30 p-4 mb-4">
+                      <div className="mb-3 text-xs font-semibold text-[#092A4D]/60">
+                        Anggota ({room.user_count}/{selectedUserCount}):
+                      </div>
+                      <div className="space-y-2">
+                        {members.map((member, idx) => (
                           <div
-                            key={`empty-${idx}`}
+                            key={member.id}
                             className="flex items-center gap-2 text-sm"
                           >
-                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#DBE3F0]/50 border border-[#DBE3F0] text-xs font-semibold text-[#092A4D]/40">
-                              {group.totalSlots - group.availableSlots + idx + 1}
+                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-green-500 text-xs font-semibold text-white">
+                              {member.slot_number}
                             </span>
-                            <span className="italic text-[#092A4D]/40">
-                              Tersedia
-                            </span>
+                            <span className="text-[#092A4D]">{member.member_name || `User ${member.slot_number}`}</span>
+                            <span className="text-green-500">✓</span>
                           </div>
-                        )
-                      )}
+                        ))}
+                        {Array.from({ length: availableSlots }).map(
+                          (_, idx) => (
+                            <div
+                              key={`empty-${idx}`}
+                              className="flex items-center gap-2 text-sm"
+                            >
+                              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#DBE3F0]/50 border border-[#DBE3F0] text-xs font-semibold text-[#092A4D]/40">
+                                {room.user_count + idx + 1}
+                              </span>
+                              <span className="italic text-[#092A4D]/40">
+                                Tersedia
+                              </span>
+                            </div>
+                          )
+                        )}
+                      </div>
                     </div>
-                  </div>
 
-                  <button
-                    onClick={handleOpenPopup}
-                    className="w-full rounded-full bg-gradient-to-r from-[#3D73B1] to-[#092A4D] px-6 py-3 text-center font-semibold text-white transition-all hover:opacity-90 hover:shadow-lg"
-                  >
-                    Gabung Ruangan
-                  </button>
-                </div>
-              ))}
+                    <button
+                      onClick={handleOpenPopup}
+                      className="w-full rounded-full bg-gradient-to-r from-[#3D73B1] to-[#092A4D] px-6 py-3 text-center font-semibold text-white transition-all hover:opacity-90 hover:shadow-lg"
+                    >
+                      Gabung Ruangan
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <div className="text-center py-12 text-[#092A4D]/60 bg-[#F9F7F8] rounded-2xl">
@@ -557,65 +679,75 @@ export default function DaftarRuanganPage() {
         {/* Ruangan Penuh */}
         <div>
           <h2 className="text-2xl font-bold text-[#092A4D] mb-6">
-            Ruangan Penuh ({fullGroups.length})
+            Ruangan Penuh ({fullRuangan.length})
           </h2>
 
-          {fullGroups.length > 0 ? (
+          {fullRuangan.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2">
-              {fullGroups.map((group) => (
-                <div
-                  key={group.id}
-                  className="rounded-2xl border-2 border-[#DBE3F0]/30 bg-[#F9F7F8] p-6 opacity-60"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-4">
-                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#092A4D]/50 to-[#092A4D]/30 text-xl font-bold text-white shadow-md">
-                        {group.id}
-                      </div>
-                      <div>
-                        <div className="font-semibold text-[#092A4D] text-lg">
-                          {group.name}
-                        </div>
-                        <div className="text-sm text-[#092A4D]/60">
-                          Rp{group.pricePerUser}/user • {group.userCount} user
-                        </div>
-                        <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
-                          Penuh
-                        </span>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm text-[#092A4D]/60 mb-1">
-                        Slot tersedia
-                      </div>
-                      <div className="text-lg font-bold text-red-500">
-                        {group.availableSlots}/{group.totalSlots}
-                      </div>
-                    </div>
-                  </div>
+              {fullRuangan.map((room) => {
+                const members = room.ruangan_users || [];
+                const pricePerUser = calculatePriceFormatted(
+                  provider.base_price,
+                  selectedUserCount,
+                  provider.max_user,
+                  provider.admin_price
+                );
 
-                  {/* Members List */}
-                  <div className="rounded-xl bg-white border border-[#DBE3F0]/30 p-4">
-                    <div className="mb-3 text-xs font-semibold text-[#092A4D]/60">
-                      Anggota ({group.totalSlots}/{group.totalSlots}):
-                    </div>
-                    <div className="space-y-2">
-                      {group.members.map((member, idx) => (
-                        <div
-                          key={idx}
-                          className="flex items-center gap-2 text-sm"
-                        >
-                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-green-500 text-xs font-semibold text-white">
-                            {idx + 1}
-                          </span>
-                          <span className="text-[#092A4D]">{member}</span>
-                          <span className="text-green-500">✓</span>
+                return (
+                  <div
+                    key={room.id}
+                    className="rounded-2xl border-2 border-[#DBE3F0]/30 bg-[#F9F7F8] p-6 opacity-60"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-4">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#092A4D]/50 to-[#092A4D]/30 text-xl font-bold text-white shadow-md">
+                          <Users className="w-6 h-6" />
                         </div>
-                      ))}
+                        <div>
+                          <div className="font-semibold text-[#092A4D] text-lg">
+                            Ruangan #{room.id.slice(0, 8)}
+                          </div>
+                          <div className="text-sm text-[#092A4D]/60">
+                            {pricePerUser}/user • {selectedUserCount} user
+                          </div>
+                          <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+                            Penuh
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm text-[#092A4D]/60 mb-1">
+                          Slot tersedia
+                        </div>
+                        <div className="text-lg font-bold text-red-500">
+                          0/{selectedUserCount}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Members List */}
+                    <div className="rounded-xl bg-white border border-[#DBE3F0]/30 p-4">
+                      <div className="mb-3 text-xs font-semibold text-[#092A4D]/60">
+                        Anggota ({room.user_count}/{selectedUserCount}):
+                      </div>
+                      <div className="space-y-2">
+                        {members.map((member) => (
+                          <div
+                            key={member.id}
+                            className="flex items-center gap-2 text-sm"
+                          >
+                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-green-500 text-xs font-semibold text-white">
+                              {member.slot_number}
+                            </span>
+                            <span className="text-[#092A4D]">{member.member_name || `User ${member.slot_number}`}</span>
+                            <span className="text-green-500">✓</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="text-center py-12 text-[#092A4D]/60 bg-[#F9F7F8] rounded-2xl">
@@ -676,6 +808,25 @@ export default function DaftarRuanganPage() {
                   onChange={handleChange}
                   className="w-full rounded-xl border border-[#092A4D]/20 bg-white px-4 py-3 text-[#092A4D] placeholder-[#092A4D]/40 transition-all focus:border-[#3D73B1] focus:outline-none focus:ring-2 focus:ring-[#3D73B1]/20"
                   placeholder="08123456789"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="email"
+                  className="mb-2 block text-sm font-semibold text-[#092A4D]"
+                >
+                  Email <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  required
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="w-full rounded-xl border border-[#092A4D]/20 bg-white px-4 py-3 text-[#092A4D] placeholder-[#092A4D]/40 transition-all focus:border-[#3D73B1] focus:outline-none focus:ring-2 focus:ring-[#3D73B1]/20"
+                  placeholder="nama@email.com"
                 />
               </div>
 
