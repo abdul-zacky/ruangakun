@@ -6,6 +6,8 @@ import { useEffect, useMemo, useState } from "react";
 import Particles, { initParticlesEngine } from "@tsparticles/react";
 import { loadSlim } from "@tsparticles/slim";
 import { ExternalLink, Compass, Users, Shield, FileText, Puzzle, Settings, TrendingUp } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { calculatePriceFormatted, getPricingBreakdown } from "@/lib/pricing";
 
 const navigation = [
   { label: "Beranda", href: "#beranda" },
@@ -75,62 +77,12 @@ const beforeAfter = {
   ],
 };
 
-const products = [
-  {
-    image: "https://cdn.cdnlogo.com/logos/n/80/netflix.svg",
-    name: "Netflix",
-    price: "Rp17.000/bulan",
-    slug: "netflix",
-  },
-  {
-    image: "https://cdn.cdnlogo.com/logos/s/89/spotify.svg",
-    name: "Spotify Premium",
-    price: "Rp12.000/bulan",
-    slug: "spotify",
-  },
-  {
-    image: "https://cdn.cdnlogo.com/logos/y/59/youtube.svg",
-    name: "YouTube Premium",
-    price: "Rp15.000/bulan",
-    slug: "youtube",
-  },
-  {
-    image: "https://cdn.cdnlogo.com/logos/c/80/canva.svg",
-    name: "Canva Pro",
-    price: "Rp25.000/bulan",
-    slug: "canva",
-  },
-  {
-    image: "https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg",
-    name: "ChatGPT Plus",
-    price: "Rp90.000/bulan",
-    slug: "chatgpt",
-  },
-  {
-    image: "https://cdn.cdnlogo.com/logos/d/48/disney.svg",
-    name: "Disney+ Hotstar",
-    price: "Rp15.000/bulan",
-    slug: "disney",
-  },
-  {
-    image: "https://cdn.cdnlogo.com/logos/v/97/viu.svg",
-    name: "VIU Premium",
-    price: "Rp12.000/bulan",
-    slug: "viu",
-  },
-  {
-    image: "https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_music_icon.svg",
-    name: "YouTube Music",
-    price: "Rp10.000/bulan",
-    slug: "youtube-music",
-  },
-  {
-    image: "https://cdn.cdnlogo.com/logos/a/43/adobe-creative-cloud.svg",
-    name: "Adobe Creative Cloud",
-    price: "Rp150.000/bulan",
-    slug: "adobe",
-  },
-];
+// Helper function to get image URL from storage
+const getImageUrl = (iconPath) => {
+  if (!iconPath) return null;
+  if (iconPath.startsWith('http')) return iconPath;
+  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/provider-icons/${iconPath}`;
+};
 
 const testimonials = [
   {
@@ -191,6 +143,7 @@ export default function Home() {
   const [navSolid, setNavSolid] = useState(false);
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [providers, setProviders] = useState([]);
 
   useEffect(() => {
     initParticlesEngine(async (engine) => {
@@ -198,6 +151,27 @@ export default function Home() {
     }).then(() => {
       setParticlesReady(true);
     });
+  }, []);
+
+  // Fetch providers from Supabase
+  useEffect(() => {
+    const fetchProviders = async () => {
+      const { data, error } = await supabase
+        .from('provider')
+        .select('*')
+        .order('name');
+
+      if (error) {
+        console.error('Error fetching providers:', error);
+        return;
+      }
+
+      if (data) {
+        setProviders(data);
+      }
+    };
+
+    fetchProviders();
   }, []);
 
   useEffect(() => {
@@ -434,40 +408,53 @@ export default function Home() {
               </p>
             </div>
             <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-              {products.map((product, index) => (
-                <div
-                  key={`${product.name}-${index}`}
-                  className="flex flex-col rounded-3xl bg-white/10 text-center backdrop-blur-md shadow-lg shadow-black/20 transition-all duration-300 hover:scale-105 border-2 border-[#5BA3E0]/50 hover:border-[#5BA3E0] overflow-hidden"
-                >
-                  <div className="flex flex-col items-center gap-4 p-6 pb-4">
-                    <div className="relative h-24 w-24 overflow-hidden rounded-2xl border border-white/30 bg-white p-3">
-                      <Image
-                        src={product.image}
-                        alt={product.name}
-                        fill
-                        sizes="96px"
-                        className="object-contain"
-                      />
-                    </div>
-                    <div style={{fontSize: '18px'}} className="font-medium text-white/80 leading-tight">{product.name}</div>
-                  </div>
-                  <div className="flex flex-col gap-3 p-6 pt-4 mt-auto border-t border-white/10">
-                    <button
-                      onClick={() => setSelectedProduct(product)}
-                      className="flex items-center justify-center gap-1 text-sm font-medium text-white/70 hover:text-[#5BA3E0] transition-colors cursor-pointer"
-                    >
-                      {product.price}
-                      <ExternalLink size={12} className="opacity-60" />
-                    </button>
-                    <Link
-                      href={`/provider/${product.slug}`}
-                      className="w-full rounded-full bg-white/90 px-5 py-2 text-sm font-semibold text-[#092A4D] transition-colors hover:bg-white text-center"
-                    >
-                      Pesan
-                    </Link>
-                  </div>
+              {providers.length === 0 ? (
+                <div className="col-span-full text-center text-white/70">
+                  Loading providers...
                 </div>
-              ))}
+              ) : (
+                providers.map((provider) => {
+                  const price = calculatePriceFormatted(provider.base_price, provider.max_user, provider.max_user, provider.admin_price) + '/bulan';
+                  const imageUrl = getImageUrl(provider.icon);
+
+                  return (
+                    <div
+                      key={provider.id}
+                      className="flex flex-col rounded-3xl bg-white/10 text-center backdrop-blur-md shadow-lg shadow-black/20 transition-all duration-300 hover:scale-105 border-2 border-[#5BA3E0]/50 hover:border-[#5BA3E0] overflow-hidden"
+                    >
+                      <div className="flex flex-col items-center gap-4 p-6 pb-4">
+                        <div className="relative h-24 w-24 overflow-hidden rounded-2xl border border-white/30 bg-white p-3">
+                          {imageUrl && (
+                            <Image
+                              src={imageUrl}
+                              alt={provider.name}
+                              fill
+                              sizes="96px"
+                              className="object-contain"
+                            />
+                          )}
+                        </div>
+                        <div style={{fontSize: '18px'}} className="font-medium text-white/80 leading-tight">{provider.name}</div>
+                      </div>
+                      <div className="flex flex-col gap-3 p-6 pt-4 mt-auto border-t border-white/10">
+                        <button
+                          onClick={() => setSelectedProduct(provider)}
+                          className="flex items-center justify-center gap-1 text-sm font-medium text-white/70 hover:text-[#5BA3E0] transition-colors cursor-pointer"
+                        >
+                          {price}
+                          <ExternalLink size={12} className="opacity-60" />
+                        </button>
+                        <Link
+                          href={`/provider/${provider.slug}`}
+                          className="w-full rounded-full bg-white/90 px-5 py-2 text-sm font-semibold text-[#092A4D] transition-colors hover:bg-white text-center"
+                        >
+                          Pesan
+                        </Link>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
         </section>
@@ -662,53 +649,63 @@ export default function Home() {
             </button>
             <div className="flex flex-col items-center gap-6">
               <div className="relative h-20 w-20 overflow-hidden rounded-2xl border border-gray-200 bg-white p-3">
-                <Image
-                  src={selectedProduct.image}
-                  alt={selectedProduct.name}
-                  fill
-                  sizes="80px"
-                  className="object-contain"
-                />
+                {getImageUrl(selectedProduct.icon) && (
+                  <Image
+                    src={getImageUrl(selectedProduct.icon)}
+                    alt={selectedProduct.name}
+                    fill
+                    sizes="80px"
+                    className="object-contain"
+                  />
+                )}
               </div>
               <h3 className="text-2xl font-medium text-[#092A4D]">{selectedProduct.name}</h3>
               <div className="w-full space-y-4">
                 <div className="space-y-3 border-t border-gray-200 pt-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-[#092A4D]/80">Nama Paket</span>
-                    <span className="text-sm font-semibold text-[#092A4D]">{selectedProduct.name}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-[#092A4D]/80">Harga Provider</span>
-                    <span className="text-sm font-semibold text-[#092A4D]">
-                      {selectedProduct.price.replace(/Rp(\d+\.?\d*)/, (_, p1) => {
-                        const monthlyPrice = parseFloat(p1.replace('.', ''));
-                        const originalPrice = monthlyPrice * 5;
-                        return `Rp${Math.floor(originalPrice).toLocaleString('id-ID')}`;
-                      })}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-[#092A4D]/80">Jumlah Member Per Grup</span>
-                    <span className="text-sm font-semibold text-[#092A4D]">5</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-[#092A4D]/80">Harga Patungan</span>
-                    <span className="text-sm text-[#092A4D]/70">
-                      {selectedProduct.price.replace(/Rp(\d+\.?\d*)/, (_, p1) => {
-                        const monthlyPrice = parseFloat(p1.replace('.', ''));
-                        const originalPrice = monthlyPrice * 5;
-                        return `Rp${Math.floor(originalPrice).toLocaleString('id-ID')} ÷ 5 = Rp${Math.floor(monthlyPrice).toLocaleString('id-ID')}`;
-                      })}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-[#092A4D]/80">Biaya Admin</span>
-                    <span className="text-sm font-semibold text-[#092A4D]">Rp0</span>
-                  </div>
-                  <div className="flex justify-between items-center pt-3 border-t border-gray-200">
-                    <span className="text-base font-bold text-[#092A4D]">Harga Paket Perbulan</span>
-                    <span className="text-lg font-bold text-[#3D73B1]">{selectedProduct.price}</span>
-                  </div>
+                  {(() => {
+                    const breakdown = getPricingBreakdown(
+                      selectedProduct.base_price,
+                      selectedProduct.max_user,
+                      selectedProduct.max_user,
+                      selectedProduct.admin_price
+                    );
+                    return (
+                      <>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-medium text-[#092A4D]/80">Nama Paket</span>
+                          <span className="text-sm font-semibold text-[#092A4D]">{selectedProduct.name}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-medium text-[#092A4D]/80">Harga Provider</span>
+                          <span className="text-sm font-semibold text-[#092A4D]">
+                            Rp{selectedProduct.base_price.toLocaleString('id-ID')}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-medium text-[#092A4D]/80">Jumlah Member Per Grup</span>
+                          <span className="text-sm font-semibold text-[#092A4D]">{selectedProduct.max_user}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-medium text-[#092A4D]/80">Harga Patungan</span>
+                          <span className="text-sm text-[#092A4D]/70">
+                            Rp{selectedProduct.base_price.toLocaleString('id-ID')} ÷ {selectedProduct.max_user} = {breakdown.basePricePerUserFormatted}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-medium text-[#092A4D]/80">Biaya Admin</span>
+                          <span className="text-sm font-semibold text-[#092A4D]">
+                            {breakdown.scaledAdminPriceFormatted}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center pt-3 border-t border-gray-200">
+                          <span className="text-base font-bold text-[#092A4D]">Harga Paket Perbulan</span>
+                          <span className="text-lg font-bold text-[#3D73B1]">
+                            {breakdown.totalPriceFormatted}
+                          </span>
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
               <Link
