@@ -13,6 +13,7 @@ export async function POST(request) {
     const adminPrice = parseInt(formData.get('admin_price'))
     const minUser = parseInt(formData.get('min_user')) || 1
     const maxUser = parseInt(formData.get('max_user')) || 10
+    const recommendedCount = formData.get('recommended_count') ? parseInt(formData.get('recommended_count')) : null
     const iconFile = formData.get('icon')
 
     let iconPath = null
@@ -60,6 +61,7 @@ export async function POST(request) {
         admin_price: adminPrice,
         min_user: minUser,
         max_user: maxUser,
+        recommended_count: recommendedCount,
         icon: iconPath
       })
       .select()

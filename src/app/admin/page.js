@@ -18,6 +18,7 @@ export default function AdminPage() {
     admin_price: '',
     min_user: 1,
     max_user: 10,
+    recommended_count: '',
   });
 
   const [iconFile, setIconFile] = useState(null);
@@ -61,6 +62,7 @@ export default function AdminPage() {
       submitData.append('admin_price', formData.admin_price);
       submitData.append('min_user', formData.min_user);
       submitData.append('max_user', formData.max_user);
+      submitData.append('recommended_count', formData.recommended_count || '');
 
       if (iconFile) {
         submitData.append('icon', iconFile);
@@ -86,6 +88,7 @@ export default function AdminPage() {
           admin_price: '',
           min_user: 1,
           max_user: 10,
+          recommended_count: '',
         });
         setIconFile(null);
 
@@ -247,7 +250,7 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label htmlFor="min_user" className="block text-sm font-medium text-[#092A4D] mb-1">
                       Min User *
@@ -280,6 +283,24 @@ export default function AdminPage() {
                       max="10"
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D73B1] focus:border-transparent"
                     />
+                  </div>
+
+                  <div>
+                    <label htmlFor="recommended_count" className="block text-sm font-medium text-[#092A4D] mb-1">
+                      Recommended Count
+                    </label>
+                    <input
+                      type="number"
+                      id="recommended_count"
+                      name="recommended_count"
+                      value={formData.recommended_count}
+                      onChange={handleInputChange}
+                      min="1"
+                      max="10"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D73B1] focus:border-transparent"
+                      placeholder="Default: max_user"
+                    />
+                    <p className="mt-1 text-xs text-gray-500">Kosongkan untuk default ke max_user</p>
                   </div>
                 </div>
 
