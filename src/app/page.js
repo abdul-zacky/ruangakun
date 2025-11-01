@@ -342,13 +342,13 @@ export default function Home() {
               <div className="mt-8 flex flex-col gap-4 sm:flex-row">
                 <a
                   href="#produk"
-                  className="rounded-full bg-[#3D73B1] px-6 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-[#092A4D]"
+                  className="rounded-full bg-[#3D73B1] px-6 py-3 text-center text-sm font-semibold text-white! transition-colors hover:bg-[#092A4D] hover:text-white!"
                 >
                   Lihat Paket
                 </a>
                 <a
                   href="#transformasi"
-                  className="rounded-full border border-[#DBE3F0]/50 px-6 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-[#DBE3F0]/20"
+                  className="rounded-full border border-[#DBE3F0]/50 px-6 py-3 text-center text-sm font-semibold text-white! transition-colors hover:bg-white hover:text-[#3D73B1]"
                 >
                   Pelajari Transformasi
                 </a>
