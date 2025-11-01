@@ -248,6 +248,7 @@ export default function OrderPage() {
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
+    email: "",
   });
 
   useEffect(() => {
@@ -260,11 +261,13 @@ export default function OrderPage() {
     // Load saved info from cookies
     const savedName = getCookie("user_name");
     const savedPhone = getCookie("user_phone");
-    
-    if (savedName || savedPhone) {
+    const savedEmail = getCookie("user_email");
+
+    if (savedName || savedPhone || savedEmail) {
       setFormData({
         name: savedName || "",
         phone: savedPhone || "",
+        email: savedEmail || "",
       });
       setSaveInfo(true);
     }
@@ -344,17 +347,38 @@ export default function OrderPage() {
     setShowPopup(false);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Save to cookies if checkbox is checked
     if (saveInfo) {
       setCookie("user_name", formData.name);
       setCookie("user_phone", formData.phone);
+      setCookie("user_email", formData.email);
+
+      // Save to database cookie_user entry
+      const ruangAkunId = getCookie("RuangAkunID");
+      if (ruangAkunId) {
+        try {
+          await fetch("/api/user/update-info", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              userId: ruangAkunId,
+              fullName: formData.name,
+              whatsappNumber: formData.phone,
+              email: formData.email,
+            }),
+          });
+        } catch (error) {
+          console.error("Failed to save user info to database:", error);
+        }
+      }
     } else {
       // Clear cookies if unchecked
       setCookie("user_name", "", -1);
       setCookie("user_phone", "", -1);
+      setCookie("user_email", "", -1);
     }
 
     // Prepare order data
@@ -778,6 +802,25 @@ export default function OrderPage() {
                   onChange={handleChange}
                   className="w-full rounded-xl border border-[#092A4D]/20 bg-white/50 px-4 py-3 text-[#092A4D] placeholder-[#092A4D]/40 backdrop-blur-sm transition-all focus:border-[#3D73B1] focus:outline-none focus:ring-2 focus:ring-[#3D73B1]/20"
                   placeholder="08123456789"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="email"
+                  className="mb-2 block text-sm font-semibold text-[#092A4D]"
+                >
+                  Email <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  required
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="w-full rounded-xl border border-[#092A4D]/20 bg-white/50 px-4 py-3 text-[#092A4D] placeholder-[#092A4D]/40 backdrop-blur-sm transition-all focus:border-[#3D73B1] focus:outline-none focus:ring-2 focus:ring-[#3D73B1]/20"
+                  placeholder="nama@email.com"
                 />
               </div>
 

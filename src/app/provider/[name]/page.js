@@ -297,6 +297,7 @@ export default function ProviderPage() {
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
+    email: "",
   });
   const [ruangan, setRuangan] = useState([]);
 
@@ -342,9 +343,7 @@ export default function ProviderPage() {
             slot_number,
             cookie_user_id,
             payment_id,
-            cookie_user (
-              full_name
-            )
+            member_name
           )
         `)
         .eq('provider_id', provider.id)
@@ -365,11 +364,13 @@ export default function ProviderPage() {
   useEffect(() => {
     const savedName = getCookie("user_name");
     const savedPhone = getCookie("user_phone");
+    const savedEmail = getCookie("user_email");
 
-    if (savedName || savedPhone) {
+    if (savedName || savedPhone || savedEmail) {
       setFormData({
         name: savedName || "",
         phone: savedPhone || "",
+        email: savedEmail || "",
       });
       setSaveInfo(true);
     }
@@ -393,12 +394,15 @@ export default function ProviderPage() {
 
   // Generate pricing options based on provider's min_user and max_user
   const pricingOptions = [];
+  // Use recommended_count if set, otherwise default to max_user
+  const recommendedCount = provider.recommended_count || provider.max_user;
+
   for (let users = provider.min_user; users <= provider.max_user; users++) {
     pricingOptions.push({
       users,
       price: calculatePriceFormatted(provider.base_price, users, provider.max_user, provider.admin_price).replace('Rp', ''),
       duration: provider.duration,
-      recommended: users === provider.max_user // Recommend max users for best price
+      recommended: users === recommendedCount
     });
   }
 
@@ -426,16 +430,37 @@ export default function ProviderPage() {
     setShowPopup(false);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Save to cookies if checkbox is checked
     if (saveInfo) {
       setCookie("user_name", formData.name);
       setCookie("user_phone", formData.phone);
+      setCookie("user_email", formData.email);
+
+      // Save to database cookie_user entry
+      const ruangAkunId = getCookie("RuangAkunID");
+      if (ruangAkunId) {
+        try {
+          await fetch("/api/user/update-info", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              userId: ruangAkunId,
+              fullName: formData.name,
+              whatsappNumber: formData.phone,
+              email: formData.email,
+            }),
+          });
+        } catch (error) {
+          console.error("Failed to save user info to database:", error);
+        }
+      }
     } else {
       setCookie("user_name", "", -1);
       setCookie("user_phone", "", -1);
+      setCookie("user_email", "", -1);
     }
 
     // Prepare order data
@@ -609,11 +634,6 @@ export default function ProviderPage() {
                     </span>
                     <span className="text-sm font-semibold text-[#092A4D]">
                       {pricingBreakdown.scaledAdminPriceFormatted}
-                      {pricingBreakdown.increasePercentage > 0 && (
-                        <span className="text-xs text-[#092A4D]/60 ml-1">
-                          (+{pricingBreakdown.increasePercentage}%)
-                        </span>
-                      )}
                     </span>
                   </div>
                   <div className="h-px bg-[#092A4D]/10"></div>
@@ -792,7 +812,7 @@ export default function ProviderPage() {
                                   {member.slot_number}
                                 </span>
                                 <span className="text-[#092A4D]">
-                                  {member.cookie_user?.full_name || `User ${member.slot_number}`}
+                                  {member.member_name || `User ${member.slot_number}`}
                                 </span>
                                 <span className="text-green-500">✓</span>
                               </div>
@@ -962,6 +982,25 @@ export default function ProviderPage() {
                   onChange={handleChange}
                   className="w-full rounded-xl border border-[#092A4D]/20 bg-white px-4 py-3 text-[#092A4D] placeholder-[#092A4D]/40 transition-all focus:border-[#3D73B1] focus:outline-none focus:ring-2 focus:ring-[#3D73B1]/20"
                   placeholder="08123456789"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="email"
+                  className="mb-2 block text-sm font-semibold text-[#092A4D]"
+                >
+                  Email <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  required
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="w-full rounded-xl border border-[#092A4D]/20 bg-white px-4 py-3 text-[#092A4D] placeholder-[#092A4D]/40 transition-all focus:border-[#3D73B1] focus:outline-none focus:ring-2 focus:ring-[#3D73B1]/20"
+                  placeholder="nama@email.com"
                 />
               </div>
 
