@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import Particles, { initParticlesEngine } from "@tsparticles/react";
 import { loadSlim } from "@tsparticles/slim";
+import { ExternalLink, Compass, Users, Shield, FileText, Puzzle, Settings, TrendingUp } from "lucide-react";
 
 const navigation = [
   { label: "Beranda", href: "#beranda" },
@@ -17,19 +18,19 @@ const navigation = [
 
 const benefits = [
   {
-    icon: "🧭",
+    icon: Compass,
     title: "Satu Pusat Kendali",
     description:
       "Susun, jadwalkan, dan analisis semua akun digital dalam satu dashboard terpadu.",
   },
   {
-    icon: "🤝",
+    icon: Users,
     title: "Kolaborasi Lancar",
     description:
       "Ajak tim atau klien dengan hak akses granular tanpa repot berbagi password.",
   },
   {
-    icon: "🛡️",
+    icon: Shield,
     title: "Keamanan Berlapis",
     description:
       "Lindungi aset digital dengan enkripsi end-to-end dan audit trail realtime.",
@@ -38,22 +39,22 @@ const benefits = [
 
 const steps = [
   {
-    icon: "📝",
+    icon: FileText,
     title: "Konsultasi Singkat",
     detail: "Isi formulir kebutuhan dan pilih paket yang paling pas.",
   },
   {
-    icon: "🧩",
+    icon: Puzzle,
     title: "Kurasi Solusi",
     detail: "Tim kami merancang ruang kerja digital sesuai alur bisnis Anda.",
   },
   {
-    icon: "⚙️",
+    icon: Settings,
     title: "Implementasi",
     detail: "Kami bantu migrasi data, integrasi, dan pelatihan tim.",
   },
   {
-    icon: "📈",
+    icon: TrendingUp,
     title: "Optimalisasi",
     detail: "Monitoring kinerja berkelanjutan dengan laporan otomatis mingguan.",
   },
@@ -78,55 +79,55 @@ const products = [
   {
     image: "https://cdn.cdnlogo.com/logos/n/80/netflix.svg",
     name: "Netflix",
-    price: "Mulai Rp17.000",
+    price: "Rp17.000/bulan",
     slug: "netflix",
   },
   {
     image: "https://cdn.cdnlogo.com/logos/s/89/spotify.svg",
     name: "Spotify Premium",
-    price: "Mulai Rp12.000",
+    price: "Rp12.000/bulan",
     slug: "spotify",
   },
   {
     image: "https://cdn.cdnlogo.com/logos/y/59/youtube.svg",
     name: "YouTube Premium",
-    price: "Mulai Rp15.000",
+    price: "Rp15.000/bulan",
     slug: "youtube",
   },
   {
     image: "https://cdn.cdnlogo.com/logos/c/80/canva.svg",
     name: "Canva Pro",
-    price: "Mulai Rp25.000",
+    price: "Rp25.000/bulan",
     slug: "canva",
   },
   {
     image: "https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg",
     name: "ChatGPT Plus",
-    price: "Mulai Rp90.000",
+    price: "Rp90.000/bulan",
     slug: "chatgpt",
   },
   {
     image: "https://cdn.cdnlogo.com/logos/d/48/disney.svg",
     name: "Disney+ Hotstar",
-    price: "Mulai Rp15.000",
+    price: "Rp15.000/bulan",
     slug: "disney",
   },
   {
     image: "https://cdn.cdnlogo.com/logos/v/97/viu.svg",
     name: "VIU Premium",
-    price: "Mulai Rp12.000",
+    price: "Rp12.000/bulan",
     slug: "viu",
   },
   {
     image: "https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_music_icon.svg",
     name: "YouTube Music",
-    price: "Mulai Rp10.000",
+    price: "Rp10.000/bulan",
     slug: "youtube-music",
   },
   {
     image: "https://cdn.cdnlogo.com/logos/a/43/adobe-creative-cloud.svg",
     name: "Adobe Creative Cloud",
-    price: "Mulai Rp150.000",
+    price: "Rp150.000/bulan",
     slug: "adobe",
   },
 ];
@@ -189,6 +190,7 @@ export default function Home() {
   const [particlesReady, setParticlesReady] = useState(false);
   const [navSolid, setNavSolid] = useState(false);
   const [activeTestimonial, setActiveTestimonial] = useState(0);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   useEffect(() => {
     initParticlesEngine(async (engine) => {
@@ -302,8 +304,8 @@ export default function Home() {
             href="#cara-order"
             className={`hidden rounded-full px-5 py-2 text-sm font-semibold transition-colors md:inline-flex ${
               navSolid
-                ? "bg-[#3D73B1] text-white! hover:bg-[#092A4D]"
-                : "border border-white/40 text-white! hover:bg-white/10"
+                ? "bg-[#3D73B1] text-white! hover:bg-[#092A4D] hover:text-white!"
+                : "border border-white/40 text-white! hover:bg-white/10 hover:text-white!"
             }`}
           >
             Konsultasi Gratis
@@ -311,7 +313,7 @@ export default function Home() {
         </nav>
       </header>
 
-  <main className="flex flex-col pb-24">
+  <main className="flex flex-col">
         <section className="relative overflow-hidden pt-32">
           <div className="absolute inset-0">
             <div className="absolute inset-0 bg-linear-to-br from-[#092A4D] via-[#092A4D] to-[#3D73B1]/60 opacity-90" />
@@ -331,7 +333,7 @@ export default function Home() {
               <span className="inline-flex items-center gap-2 rounded-full border border-[#DBE3F0]/40 bg-[#DBE3F0]/20 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-[#DBE3F0]">
                 Solusi Akun Sharing #1
               </span>
-              <h1 className="mt-6 text-4xl font-bold leading-tight md:text-4xl">
+              <h1 className="mt-6 text-4xl font-medium leading-tight md:text-4xl">
                 Layanan Premium <span className="">Mudah</span> dan <span className="underline">Terjangkau</span>
               </h1>
               <p className="mt-5 text-base leading-relaxed text-[#DBE3F0]">
@@ -340,13 +342,13 @@ export default function Home() {
               <div className="mt-8 flex flex-col gap-4 sm:flex-row">
                 <a
                   href="#produk"
-                  className="rounded-full bg-[#3D73B1] px-6 py-3 text-center text-sm font-semibold text-[#F9F7F8]! transition-colors hover:bg-[#F9F7F8] hover:text-[#092A4D]!"
+                  className="rounded-full bg-[#3D73B1] px-6 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-[#092A4D]"
                 >
                   Lihat Paket
                 </a>
                 <a
                   href="#transformasi"
-                  className="rounded-full border border-[#DBE3F0]/50 px-6 py-3 text-center text-sm font-semibold text-[#DBE3F0]! transition-colors hover:bg-[#DBE3F0]/20"
+                  className="rounded-full border border-[#DBE3F0]/50 px-6 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-[#DBE3F0]/20"
                 >
                   Pelajari Transformasi
                 </a>
@@ -387,26 +389,31 @@ export default function Home() {
           <div className="pointer-events-none absolute -right-20 bottom-12 h-64 w-64 rounded-full bg-white/45 blur-3xl" />
           <div className="relative mx-auto flex max-w-6xl flex-col gap-12">
             <div className="flex flex-col items-center gap-4 text-center">
-              <span className="text-sm font-semibold text-[#3D73B1]">Kenapa RuangAkun</span>
-              <h2 className="text-3xl font-bold text-[#092A4D] md:text-4xl">
+              <h2 className="text-3xl font-medium text-[#092A4D] md:text-4xl">
                 Untuk Apa Bayar Mahal?
               </h2>
-              <p className="text-3xl font-semibold text-[#092A4D]/80">
+              <p className="text-3xl font-medium text-[#092A4D]/80">
                 RuangAkun Aja!
               </p>
             </div>
             <div className="grid gap-6 md:grid-cols-3">
-              {benefits.map((benefit) => (
-                <div key={benefit.title} className={`${glassClasses} h-full p-8`}>
-                  <span className="text-3xl" aria-hidden>
-                    {benefit.icon}
-                  </span>
-                  <h3 className="text-xl font-semibold text-[#092A4D]">{benefit.title}</h3>
-                  <p className="mt-4 text-sm leading-relaxed text-[#092A4D]/70">
-                    {benefit.description}
-                  </p>
-                </div>
-              ))}
+              {benefits.map((benefit) => {
+                const IconComponent = benefit.icon;
+                return (
+                  <div key={benefit.title} className={`${glassClasses} h-full p-8 flex flex-col items-center text-center`}>
+                    <div className="relative mb-6">
+                      <div className="absolute inset-0 bg-linear-to-br from-[#3D73B1] to-[#092A4D] rounded-full blur-md opacity-20" />
+                      <div className="relative bg-linear-to-br from-[#3D73B1] to-[#092A4D] rounded-full p-5">
+                        <IconComponent className="w-8 h-8 text-white" strokeWidth={2} />
+                      </div>
+                    </div>
+                    <h3 className="text-xl font-medium text-[#092A4D]">{benefit.title}</h3>
+                    <p className="mt-4 text-sm leading-relaxed text-[#092A4D]/70">
+                      {benefit.description}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -419,8 +426,7 @@ export default function Home() {
           <div className="pointer-events-none absolute -bottom-20 left-10 h-72 w-72 rounded-full bg-[#092A4D]/60 blur-3xl" />
           <div className="relative mx-auto flex max-w-6xl flex-col gap-12">
             <div className="flex flex-col items-center gap-4 text-center">
-              <span className="text-sm font-semibold text-white/80">Produk Premium</span>
-              <h2 className="text-3xl font-bold text-white md:text-4xl">
+              <h2 className="text-3xl font-medium text-white md:text-4xl">
                 Nikmati Layanan Premium dengan Harga Terjangkau
               </h2>
               <p className="max-w-2xl text-base text-white/70">
@@ -431,25 +437,35 @@ export default function Home() {
               {products.map((product, index) => (
                 <div
                   key={`${product.name}-${index}`}
-                  className="flex flex-col items-center gap-5 rounded-3xl bg-white/10 p-6 text-center text-white/90 backdrop-blur-md shadow-lg shadow-black/20 transition-transform hover:scale-105"
+                  className="flex flex-col rounded-3xl bg-white/10 text-center backdrop-blur-md shadow-lg shadow-black/20 transition-all duration-300 hover:scale-105 border-2 border-[#5BA3E0]/50 hover:border-[#5BA3E0] overflow-hidden"
                 >
-                  <div className="relative h-16 w-16 overflow-hidden rounded-2xl border border-white/30 bg-white p-2">
-                    <Image
-                      src={product.image}
-                      alt={product.name}
-                      fill
-                      sizes="64px"
-                      className="object-contain"
-                    />
+                  <div className="flex flex-col items-center gap-4 p-6 pb-4">
+                    <div className="relative h-24 w-24 overflow-hidden rounded-2xl border border-white/30 bg-white p-3">
+                      <Image
+                        src={product.image}
+                        alt={product.name}
+                        fill
+                        sizes="96px"
+                        className="object-contain"
+                      />
+                    </div>
+                    <div style={{fontSize: '18px'}} className="font-medium text-white/80 leading-tight">{product.name}</div>
                   </div>
-                  <h3 className="text-base font-semibold text-white">{product.name}</h3>
-                  <div className="text-sm font-medium text-white/70">{product.price}</div>
-                  <Link 
-                    href={`/order?package=${product.slug}`}
-                    className="w-full rounded-full bg-white/90 px-5 py-2 text-sm font-semibold text-[#092A4D] transition-colors hover:bg-white text-center"
-                  >
-                    Pesan
-                  </Link>
+                  <div className="flex flex-col gap-3 p-6 pt-4 mt-auto border-t border-white/10">
+                    <button
+                      onClick={() => setSelectedProduct(product)}
+                      className="flex items-center justify-center gap-1 text-sm font-medium text-white/70 hover:text-[#5BA3E0] transition-colors cursor-pointer"
+                    >
+                      {product.price}
+                      <ExternalLink size={12} className="opacity-60" />
+                    </button>
+                    <Link
+                      href={`/order?package=${product.slug}`}
+                      className="w-full rounded-full bg-white/90 px-5 py-2 text-sm font-semibold text-[#092A4D] transition-colors hover:bg-white text-center"
+                    >
+                      Pesan
+                    </Link>
+                  </div>
                 </div>
               ))}
             </div>
@@ -465,32 +481,37 @@ export default function Home() {
           <div className="pointer-events-none absolute right-0 bottom-0 h-64 w-64 rounded-full bg-[#092A4D]/10 blur-3xl" />
           <div className="relative mx-auto flex max-w-6xl flex-col gap-12">
             <div className="flex flex-col items-center gap-4 text-center">
-              <span className="text-sm font-semibold text-[#3D73B1]">Cara Order</span>
-              <h2 className="text-3xl font-bold text-[#092A4D] md:text-4xl">
+              <h2 className="text-3xl font-medium text-[#092A4D] md:text-4xl">
                 Langkah Sederhana, Hasil Maksimal
               </h2>
               <p className="max-w-2xl text-base text-[#092A4D]/70">
                 Tim kami mendampingi setiap tahap implementasi agar transisi terasa mulus bagi seluruh tim.
               </p>
             </div>
-            <div className={`${glassClasses} relative overflow-hidden p-8 md:p-12`}>
-              <span
-                className="pointer-events-none absolute left-7 top-12 bottom-12 w-px bg-white/40"
-                aria-hidden="true"
-              />
-              <div className="flex flex-col gap-10">
-                {steps.map((step, index) => (
-                  <div key={step.title} className="relative pl-16">
-                    <div className="absolute left-0 top-0 flex h-12 w-12 items-center justify-center rounded-full bg-[#3D73B1] text-xl text-white shadow-lg shadow-[#092A4D30]">
-                      <span aria-hidden>{step.icon}</span>
+            <div className="relative p-8 md:p-12">
+              <div className="absolute left-1/2 top-12 bottom-12 w-0.5 bg-linear-to-b from-[#3D73B1] to-[#092A4D] -translate-x-1/2 hidden md:block" aria-hidden="true" />
+              <div className="flex flex-col gap-20">
+                {steps.map((step, index) => {
+                  const IconComponent = step.icon;
+                  const isEven = index % 2 === 0;
+                  return (
+                    <div key={step.title} className="relative flex items-center flex-col md:flex-row">
+                      <div className={`flex-1 ${isEven ? 'md:pr-24' : 'md:order-2 md:pl-24'} mb-6 md:mb-0`}>
+                        <div className={`${glassClasses} p-6 text-center`}>
+                          <span className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#3D73B1]/80">
+                            Langkah {index + 1}
+                          </span>
+                          <h3 className="mt-2 text-base font-medium text-[#092A4D]">{step.title}</h3>
+                          <p className="mt-2 text-xs leading-relaxed text-[#092A4D]/70">{step.detail}</p>
+                        </div>
+                      </div>
+                      <div className={`absolute left-1/2 -translate-x-1/2 z-10 flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-[#3D73B1] to-[#092A4D] text-white shadow-xl shadow-[#092A4D40] ${isEven ? 'md:order-1' : 'md:order-2'}`}>
+                        <IconComponent className="w-7 h-7" strokeWidth={2} />
+                      </div>
+                      <div className={`flex-1 hidden md:block ${isEven ? 'md:order-2' : 'md:order-1'}`} />
                     </div>
-                    <span className="text-xs font-semibold uppercase tracking-[0.3em] text-[#3D73B1]/80">
-                      Langkah {index + 1}
-                    </span>
-                    <h3 className="mt-2 text-lg font-semibold text-[#092A4D]">{step.title}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-[#092A4D]/70">{step.detail}</p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -504,8 +525,7 @@ export default function Home() {
           <div className="pointer-events-none absolute right-10 bottom-0 h-72 w-72 rounded-full bg-white/20 blur-3xl" />
           <div className="relative mx-auto flex max-w-6xl flex-col gap-12">
             <div className="flex flex-col items-center gap-4 text-center">
-              <span className="text-sm font-semibold text-white/80">Cerita Pengguna</span>
-              <h2 className="text-3xl font-bold text-white md:text-4xl">
+              <h2 className="text-3xl font-medium text-white md:text-4xl">
                 Dipercaya Komunitas Kreatif dan Agency
               </h2>
               <p className="max-w-3xl text-base text-white/70">
@@ -581,8 +601,7 @@ export default function Home() {
           <div className="pointer-events-none absolute right-6 bottom-0 h-64 w-64 rounded-full bg-[#3D73B1]/25 blur-3xl" />
           <div className="relative mx-auto flex max-w-6xl flex-col gap-12">
             <div className="flex flex-col items-center gap-4 text-center">
-              <span className="text-sm font-semibold text-[#3D73B1]">Before vs After</span>
-              <h2 className="text-3xl font-bold text-[#092A4D] md:text-4xl">
+              <h2 className="text-3xl font-medium text-[#092A4D] md:text-4xl">
                 Transformasi Nyata dalam 30 Hari
               </h2>
               <p className="max-w-3xl text-base text-[#092A4D]/70">
@@ -591,7 +610,7 @@ export default function Home() {
             </div>
             <div className="grid gap-6 md:grid-cols-2">
               <div className={`${glassClasses} p-8`}>
-                <h3 className="text-xl font-semibold text-[#092A4D]">Sebelum</h3>
+                <h3 className="text-xl font-medium text-[#092A4D]">Sebelum</h3>
                 <ul className="mt-4 space-y-3 text-sm text-[#092A4D]/75">
                   {beforeAfter.before.map((item) => (
                     <li key={item} className="flex items-start gap-3">
@@ -602,7 +621,7 @@ export default function Home() {
                 </ul>
               </div>
               <div className={`${blueGlassClasses} p-8 text-white`}>
-                <h3 className="text-xl font-semibold text-white">Sesudah</h3>
+                <h3 className="text-xl font-medium text-white">Sesudah</h3>
                 <ul className="mt-4 space-y-3 text-sm text-white/85">
                   {beforeAfter.after.map((item) => (
                     <li key={item} className="flex items-start gap-3">
@@ -613,31 +632,92 @@ export default function Home() {
                 </ul>
               </div>
             </div>
-          </div>
-        </section>
-
-        <section className="relative w-full overflow-hidden bg-linear-to-r from-[#092A4D] via-[#3D73B1] to-[#84A8CF] px-6 py-16 text-white shadow-inner shadow-[#092A4D1a]">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,#ffffff33,transparent_55%)]" />
-          <div className="relative mx-auto flex max-w-6xl flex-col items-center gap-8 text-center md:flex-row md:items-center md:justify-between md:text-left">
-            <div className="max-w-2xl">
-              <h3 className="text-2xl font-semibold text-white">
-                Siap Mempercepat Pertumbuhan Digital Anda?
-              </h3>
-              <p className="mt-4 text-sm leading-relaxed text-white/80">
-                Sampaikan tantangan tim Anda, dan kami siapkan demo personal RuangAkun yang relevan dengan industri Anda.
-              </p>
+            <div className="flex justify-center mt-8">
+              <Link
+                href="/order"
+                className="rounded-full bg-[#3D73B1] px-8 py-3 text-sm font-semibold text-white! transition-all hover:bg-[#092A4D] hover:text-white! hover:shadow-lg"
+              >
+                Pesan Sekarang
+              </Link>
             </div>
-            <a
-              href="mailto:halo@ruangakun.id"
-              className="rounded-full bg-white/85 px-6 py-3 text-sm font-semibold text-[#092A4D] transition-colors hover:bg-white"
-            >
-              Jadwalkan Demo
-            </a>
           </div>
         </section>
       </main>
 
-      <footer id="kontak" className="mt-24 bg-[#092A4D] py-12 text-[#DBE3F0]">
+      {selectedProduct && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          onClick={() => setSelectedProduct(null)}
+        >
+          <div
+            className={`${glassClasses} relative max-w-md w-full p-8 text-[#092A4D]`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setSelectedProduct(null)}
+              className="absolute top-4 right-4 text-2xl text-[#092A4D]/60 hover:text-[#092A4D] transition-colors"
+              aria-label="Tutup modal"
+            >
+              &times;
+            </button>
+            <div className="flex flex-col items-center gap-6">
+              <div className="relative h-20 w-20 overflow-hidden rounded-2xl border border-white/30 bg-white p-3">
+                <Image
+                  src={selectedProduct.image}
+                  alt={selectedProduct.name}
+                  fill
+                  sizes="80px"
+                  className="object-contain"
+                />
+              </div>
+              <h3 className="text-2xl font-medium text-[#092A4D]">{selectedProduct.name}</h3>
+              <div className="w-full space-y-4">
+                <h4 className="text-lg font-medium text-[#3D73B1]">Skema Harga</h4>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center p-3 rounded-lg bg-white/60">
+                    <span className="text-sm font-medium">Paket 1 Bulan</span>
+                    <span className="text-base font-bold text-[#3D73B1]">{selectedProduct.price}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 rounded-lg bg-white/60">
+                    <span className="text-sm font-medium">Paket 3 Bulan</span>
+                    <span className="text-base font-bold text-[#3D73B1]">
+                      {selectedProduct.price.replace(/Rp(\d+\.?\d*)/, (_, p1) => {
+                        const monthlyPrice = parseFloat(p1.replace('.', ''));
+                        const discount = monthlyPrice * 0.9;
+                        return `Rp${Math.floor(discount).toLocaleString('id-ID')}`;
+                      })}
+                      <span className="text-xs text-[#092A4D]/60 ml-1">(hemat 10%)</span>
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 rounded-lg bg-white/60">
+                    <span className="text-sm font-medium">Paket 6 Bulan</span>
+                    <span className="text-base font-bold text-[#3D73B1]">
+                      {selectedProduct.price.replace(/Rp(\d+\.?\d*)/, (_, p1) => {
+                        const monthlyPrice = parseFloat(p1.replace('.', ''));
+                        const discount = monthlyPrice * 0.85;
+                        return `Rp${Math.floor(discount).toLocaleString('id-ID')}`;
+                      })}
+                      <span className="text-xs text-[#092A4D]/60 ml-1">(hemat 15%)</span>
+                    </span>
+                  </div>
+                </div>
+                <p className="text-xs text-[#092A4D]/60 mt-4 text-center">
+                  *Harga per bulan untuk paket berlangganan
+                </p>
+              </div>
+              <Link
+                href={`/order?package=${selectedProduct.slug}`}
+                className="w-full rounded-full bg-[#3D73B1] px-6 py-3 text-center text-sm font-semibold text-white! transition-all hover:bg-[#092A4D] hover:text-white! hover:shadow-lg"
+                onClick={() => setSelectedProduct(null)}
+              >
+                Pesan Sekarang
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <footer id="kontak" className="bg-[#092A4D] py-12 text-[#DBE3F0]">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 md:flex-row md:items-center md:justify-between">
           <div>
             <div className="text-xl font-semibold text-white">RuangAkun</div>
