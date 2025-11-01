@@ -460,7 +460,7 @@ export default function Home() {
                       <ExternalLink size={12} className="opacity-60" />
                     </button>
                     <Link
-                      href={`/order?package=${product.slug}`}
+                      href={`/provider/${product.slug}`}
                       className="w-full rounded-full bg-white/90 px-5 py-2 text-sm font-semibold text-[#092A4D] transition-colors hover:bg-white text-center"
                     >
                       Pesan
