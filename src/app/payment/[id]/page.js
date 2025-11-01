@@ -1,14 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import Particles, { initParticlesEngine } from "@tsparticles/react";
 import { loadSlim } from "@tsparticles/slim";
+import { supabase } from "@/lib/supabase";
 
 export default function PaymentPage() {
   const router = useRouter();
-  const [orderData, setOrderData] = useState(null);
+  const params = useParams();
+  const paymentId = params.id;
+
+  const [payment, setPayment] = useState(null);
+  const [provider, setProvider] = useState(null);
+  const [ruangan, setRuangan] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [particlesInit, setParticlesInit] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(3600); // 1 hour in seconds
 
@@ -20,15 +27,54 @@ export default function PaymentPage() {
       setParticlesInit(true);
     });
 
-    // Load order data from sessionStorage
-    const savedOrder = sessionStorage.getItem("currentOrder");
-    if (savedOrder) {
-      setOrderData(JSON.parse(savedOrder));
-    } else {
-      // Redirect back if no order data
-      router.push("/");
-    }
-  }, [router]);
+    // Fetch payment data from database
+    const fetchPaymentData = async () => {
+      const { data: paymentData, error: paymentError } = await supabase
+        .from('payment')
+        .select(`
+          *,
+          cookie_user (
+            full_name,
+            email,
+            whatsapp_number
+          )
+        `)
+        .eq('id', paymentId)
+        .single();
+
+      if (paymentError || !paymentData) {
+        console.error('Error fetching payment:', paymentError);
+        router.push('/');
+        return;
+      }
+
+      setPayment(paymentData);
+
+      // Fetch ruangan and provider info via ruangan_users
+      const { data: ruanganUserData, error: ruanganUserError } = await supabase
+        .from('ruangan_users')
+        .select(`
+          *,
+          ruangan (
+            *,
+            provider (*)
+          )
+        `)
+        .eq('payment_id', paymentId)
+        .single();
+
+      if (ruanganUserError || !ruanganUserData) {
+        console.error('Error fetching ruangan:', ruanganUserError);
+      } else {
+        setRuangan(ruanganUserData.ruangan);
+        setProvider(ruanganUserData.ruangan.provider);
+      }
+
+      setLoading(false);
+    };
+
+    fetchPaymentData();
+  }, [paymentId, router]);
 
   // Countdown timer
   useEffect(() => {
@@ -64,14 +110,15 @@ export default function PaymentPage() {
     }).format(price);
   };
 
-  if (!orderData) {
-    return null;
+  if (loading || !payment) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#092A4D] via-[#3D73B1] to-[#DBE3F0]">
+        <div className="text-white text-lg">Loading payment details...</div>
+      </div>
+    );
   }
 
-  const price =
-    orderData.orderType === "private"
-      ? orderData.plan?.price
-      : orderData.group?.pricePerUser;
+  const price = payment.total_price;
 
   const navigation = [
     { label: "Beranda", href: "/" },
@@ -193,60 +240,45 @@ export default function PaymentPage() {
               <div className="pb-4 border-b border-white/20">
                 <p className="text-white/80 drop-shadow text-sm mb-1">Produk</p>
                 <p className="text-white font-semibold text-lg">
-                  {orderData.product}
+                  {provider?.name || 'Loading...'}
                 </p>
               </div>
 
               <div className="pb-4 border-b border-white/20">
                 <p className="text-white/80 text-sm mb-1 drop-shadow">Tipe Pemesanan</p>
                 <p className="text-white font-semibold drop-shadow">
-                  {orderData.orderType === "private"
-                    ? "Akun Private"
-                    : "Grup Patungan"}
+                  Grup Patungan
                 </p>
               </div>
 
-              {orderData.orderType === "private" ? (
-                <div className="pb-4 border-b border-white/20">
-                  <p className="text-white/80 text-sm mb-1 drop-shadow">Paket</p>
-                  <p className="text-white font-semibold drop-shadow">
-                    {orderData.plan?.name}
-                  </p>
-                  <p className="text-white/80 text-sm drop-shadow">
-                    {orderData.plan?.duration}
-                  </p>
-                </div>
-              ) : (
-                <div className="pb-4 border-b border-white/20">
-                  <p className="text-white/80 text-sm mb-1 drop-shadow">Grup</p>
-                  <p className="text-white font-semibold drop-shadow">
-                    {orderData.group?.name}
-                  </p>
-                  <p className="text-white/80 text-sm drop-shadow">
-                    Slot: {orderData.group?.availableSlots}/
-                    {orderData.group?.totalSlots} tersedia
-                  </p>
-                </div>
-              )}
+              <div className="pb-4 border-b border-white/20">
+                <p className="text-white/80 text-sm mb-1 drop-shadow">Jumlah User</p>
+                <p className="text-white font-semibold drop-shadow">
+                  {payment.user_count} orang
+                </p>
+                <p className="text-white/80 text-sm drop-shadow">
+                  {provider?.duration || '30 hari'}
+                </p>
+              </div>
 
               <div className="pb-4 border-b border-white/20">
                 <p className="text-white/80 drop-shadow text-sm mb-1">Nama</p>
                 <p className="text-white font-semibold">
-                  {orderData.customer.name}
+                  {payment.cookie_user?.full_name || 'Anonymous'}
                 </p>
               </div>
 
               <div className="pb-4 border-b border-white/20">
                 <p className="text-white/80 drop-shadow text-sm mb-1">Email</p>
                 <p className="text-white font-semibold">
-                  {orderData.customer.email}
+                  {payment.cookie_user?.email || '-'}
                 </p>
               </div>
 
               <div className="pb-4 border-b border-white/20">
                 <p className="text-white/80 drop-shadow text-sm mb-1">No. WhatsApp</p>
                 <p className="text-white font-semibold">
-                  {orderData.customer.phone}
+                  {payment.cookie_user?.whatsapp_number || '-'}
                 </p>
               </div>
 
@@ -354,7 +386,7 @@ export default function PaymentPage() {
         {/* Back Button */}
         <div className="text-center mt-8">
           <Link
-            href={`/order?package=${orderData.productSlug}`}
+            href={provider ? `/provider/${provider.slug}` : '/'}
             className="inline-flex items-center gap-2 text-white hover:text-white/80 drop-shadow transition-colors"
           >
             <span>←</span>

@@ -294,6 +294,7 @@ export default function ProviderPage() {
   const [activeTab, setActiveTab] = useState("tersedia"); // "tersedia" or "penuh"
   const [showPopup, setShowPopup] = useState(false);
   const [saveInfo, setSaveInfo] = useState(false);
+  const [selectedRoom, setSelectedRoom] = useState(null); // Track which room user is joining (null = create new)
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -422,16 +423,25 @@ export default function ProviderPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleOpenPopup = () => {
+  const handleOpenPopup = (room = null) => {
+    setSelectedRoom(room); // null = create new room, otherwise join existing
     setShowPopup(true);
   };
 
   const handleClosePopup = () => {
     setShowPopup(false);
+    setSelectedRoom(null);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Get RuangAkunID cookie
+    const ruangAkunId = getCookie("RuangAkunID");
+    if (!ruangAkunId) {
+      alert("Cookie user ID not found. Please refresh the page.");
+      return;
+    }
 
     // Save to cookies if checkbox is checked
     if (saveInfo) {
@@ -440,22 +450,19 @@ export default function ProviderPage() {
       setCookie("user_email", formData.email);
 
       // Save to database cookie_user entry
-      const ruangAkunId = getCookie("RuangAkunID");
-      if (ruangAkunId) {
-        try {
-          await fetch("/api/user/update-info", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              userId: ruangAkunId,
-              fullName: formData.name,
-              whatsappNumber: formData.phone,
-              email: formData.email,
-            }),
-          });
-        } catch (error) {
-          console.error("Failed to save user info to database:", error);
-        }
+      try {
+        await fetch("/api/user/update-info", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: ruangAkunId,
+            fullName: formData.name,
+            whatsappNumber: formData.phone,
+            email: formData.email,
+          }),
+        });
+      } catch (error) {
+        console.error("Failed to save user info to database:", error);
       }
     } else {
       setCookie("user_name", "", -1);
@@ -463,25 +470,34 @@ export default function ProviderPage() {
       setCookie("user_email", "", -1);
     }
 
-    // Prepare order data
-    const orderData = {
-      product: provider.name,
-      productSlug: productSlug,
-      providerId: provider.id,
-      userCount: selectedUserCount,
-      pricePerUser: pricePerUser,
-      totalPrice: pricePerUser,
-      basePrice: provider.base_price,
-      adminPrice: provider.admin_price,
-      customer: formData,
-      timestamp: new Date().toISOString(),
-    };
+    // Create or join ruangan
+    try {
+      const response = await fetch("/api/ruangan/join", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          providerId: provider.id,
+          userCount: selectedUserCount,
+          cookieUserId: ruangAkunId,
+          memberName: formData.name,
+          createNew: selectedRoom === null, // true if creating new room, false if joining existing
+        }),
+      });
 
-    // Save order data to sessionStorage
-    sessionStorage.setItem("currentOrder", JSON.stringify(orderData));
+      const result = await response.json();
 
-    // Redirect to payment page
-    router.push("/payment");
+      if (!response.ok) {
+        alert(result.error || "Failed to join room");
+        return;
+      }
+
+      // Success! Redirect to payment page with payment ID
+      router.push(`/payment/${result.paymentId}`);
+
+    } catch (error) {
+      console.error("Error joining room:", error);
+      alert("An error occurred while joining the room");
+    }
   };
 
   const navigation = [
@@ -835,7 +851,7 @@ export default function ProviderPage() {
 
                         {room.status === "tersedia" && (
                           <button
-                            onClick={handleOpenPopup}
+                            onClick={() => handleOpenPopup(room)}
                             className="w-full rounded-full bg-gradient-to-r from-[#3D73B1] to-[#092A4D] px-6 py-3 text-center font-semibold text-white transition-all hover:opacity-90 hover:shadow-lg"
                           >
                             Gabung Ruangan
