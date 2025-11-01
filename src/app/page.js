@@ -650,7 +650,7 @@ export default function Home() {
           onClick={() => setSelectedProduct(null)}
         >
           <div
-            className={`${glassClasses} relative max-w-md w-full p-8 text-[#092A4D]`}
+            className="relative max-w-md w-full p-8 bg-white rounded-3xl shadow-2xl text-[#092A4D]"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -661,7 +661,7 @@ export default function Home() {
               &times;
             </button>
             <div className="flex flex-col items-center gap-6">
-              <div className="relative h-20 w-20 overflow-hidden rounded-2xl border border-white/30 bg-white p-3">
+              <div className="relative h-20 w-20 overflow-hidden rounded-2xl border border-gray-200 bg-white p-3">
                 <Image
                   src={selectedProduct.image}
                   alt={selectedProduct.name}
@@ -672,38 +672,44 @@ export default function Home() {
               </div>
               <h3 className="text-2xl font-medium text-[#092A4D]">{selectedProduct.name}</h3>
               <div className="w-full space-y-4">
-                <h4 className="text-lg font-medium text-[#3D73B1]">Skema Harga</h4>
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center p-3 rounded-lg bg-white/60">
-                    <span className="text-sm font-medium">Paket 1 Bulan</span>
-                    <span className="text-base font-bold text-[#3D73B1]">{selectedProduct.price}</span>
+                <div className="space-y-3 border-t border-gray-200 pt-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-[#092A4D]/80">Nama Paket</span>
+                    <span className="text-sm font-semibold text-[#092A4D]">{selectedProduct.name}</span>
                   </div>
-                  <div className="flex justify-between items-center p-3 rounded-lg bg-white/60">
-                    <span className="text-sm font-medium">Paket 3 Bulan</span>
-                    <span className="text-base font-bold text-[#3D73B1]">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-[#092A4D]/80">Harga Provider</span>
+                    <span className="text-sm font-semibold text-[#092A4D]">
                       {selectedProduct.price.replace(/Rp(\d+\.?\d*)/, (_, p1) => {
                         const monthlyPrice = parseFloat(p1.replace('.', ''));
-                        const discount = monthlyPrice * 0.9;
-                        return `Rp${Math.floor(discount).toLocaleString('id-ID')}`;
+                        const originalPrice = monthlyPrice * 5;
+                        return `Rp${Math.floor(originalPrice).toLocaleString('id-ID')}`;
                       })}
-                      <span className="text-xs text-[#092A4D]/60 ml-1">(hemat 10%)</span>
                     </span>
                   </div>
-                  <div className="flex justify-between items-center p-3 rounded-lg bg-white/60">
-                    <span className="text-sm font-medium">Paket 6 Bulan</span>
-                    <span className="text-base font-bold text-[#3D73B1]">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-[#092A4D]/80">Jumlah Member Per Grup</span>
+                    <span className="text-sm font-semibold text-[#092A4D]">5</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-[#092A4D]/80">Harga Patungan</span>
+                    <span className="text-sm text-[#092A4D]/70">
                       {selectedProduct.price.replace(/Rp(\d+\.?\d*)/, (_, p1) => {
                         const monthlyPrice = parseFloat(p1.replace('.', ''));
-                        const discount = monthlyPrice * 0.85;
-                        return `Rp${Math.floor(discount).toLocaleString('id-ID')}`;
+                        const originalPrice = monthlyPrice * 5;
+                        return `Rp${Math.floor(originalPrice).toLocaleString('id-ID')} ÷ 5 = Rp${Math.floor(monthlyPrice).toLocaleString('id-ID')}`;
                       })}
-                      <span className="text-xs text-[#092A4D]/60 ml-1">(hemat 15%)</span>
                     </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-[#092A4D]/80">Biaya Admin</span>
+                    <span className="text-sm font-semibold text-[#092A4D]">Rp0</span>
+                  </div>
+                  <div className="flex justify-between items-center pt-3 border-t border-gray-200">
+                    <span className="text-base font-bold text-[#092A4D]">Harga Paket Perbulan</span>
+                    <span className="text-lg font-bold text-[#3D73B1]">{selectedProduct.price}</span>
                   </div>
                 </div>
-                <p className="text-xs text-[#092A4D]/60 mt-4 text-center">
-                  *Harga per bulan untuk paket berlangganan
-                </p>
               </div>
               <Link
                 href={`/order?package=${selectedProduct.slug}`}
