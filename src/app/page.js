@@ -77,25 +77,25 @@ const beforeAfter = {
 
 const products = [
   {
-    image: "https://cdn.cdnlogo.com/logos/n/80/netflix.svg",
+    image: "https://images.ctfassets.net/4cd45et68cgf/7LrExJ6PAj6MSIPkDyCO86/542b1dfabbf3959908f69be546879952/Netflix-Brand-Logo.png",
     name: "Netflix",
     price: "Rp17.000/bulan",
     slug: "netflix",
   },
   {
-    image: "https://cdn.cdnlogo.com/logos/s/89/spotify.svg",
+    image: "https://storage.googleapis.com/pr-newsroom-wp/1/2018/11/Spotify_Logo_RGB_Green.png",
     name: "Spotify Premium",
     price: "Rp12.000/bulan",
     slug: "spotify",
   },
   {
-    image: "https://cdn.cdnlogo.com/logos/y/59/youtube.svg",
+    image: "https://www.gstatic.com/youtube/img/branding/youtubelogo/svg/youtubelogo.svg",
     name: "YouTube Premium",
     price: "Rp15.000/bulan",
     slug: "youtube",
   },
   {
-    image: "https://cdn.cdnlogo.com/logos/c/80/canva.svg",
+    image: "https://static.canva.com/web/images/12487a1e0770d29351bd4ce4f87ec8fe.svg",
     name: "Canva Pro",
     price: "Rp25.000/bulan",
     slug: "canva",
@@ -107,25 +107,25 @@ const products = [
     slug: "chatgpt",
   },
   {
-    image: "https://cdn.cdnlogo.com/logos/d/48/disney.svg",
+    image: "https://cnbl-cdn.bamgrid.com/assets/7ecc8bcb60ad77193058d63e321bd21cbac2fc67513e1c2a20630fd1e8296aeb/original",
     name: "Disney+ Hotstar",
     price: "Rp15.000/bulan",
     slug: "disney",
   },
   {
-    image: "https://cdn.cdnlogo.com/logos/v/97/viu.svg",
+    image: "https://www.viu.com/ott/id/articles/wp-content/uploads/2020/09/VIU-LOGO-17.png",
     name: "VIU Premium",
     price: "Rp12.000/bulan",
     slug: "viu",
   },
   {
-    image: "https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_music_icon.svg",
+    image: "https://music.youtube.com/img/on_platform_logo_dark.svg",
     name: "YouTube Music",
     price: "Rp10.000/bulan",
     slug: "youtube-music",
   },
   {
-    image: "https://cdn.cdnlogo.com/logos/a/43/adobe-creative-cloud.svg",
+    image: "https://www.adobe.com/content/dam/cc/icons/Adobe_Corporate_Horizontal_Red_HEX.svg",
     name: "Adobe Creative Cloud",
     price: "Rp150.000/bulan",
     slug: "adobe",
