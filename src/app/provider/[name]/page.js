@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Tag, Calendar, Users } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { calculatePriceFormatted, getPricingBreakdown, calculateAdminPrice } from "@/lib/pricing";
 
 // Data produk subscription sharing
 const products = {
@@ -260,12 +262,34 @@ const products = {
   },
 };
 
+// Helper function to get image URL from storage
+const getImageUrl = (iconPath) => {
+  if (!iconPath) return null;
+  if (iconPath.startsWith('http')) return iconPath;
+  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/provider-icons/${iconPath}`;
+};
+
+// Cookie helpers (defined before component to avoid hoisting issues)
+const setCookie = (name, value, days = 365) => {
+  const expires = new Date(Date.now() + days * 864e5).toUTCString();
+  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/`;
+};
+
+const getCookie = (name) => {
+  if (typeof document === "undefined") return "";
+  return document.cookie.split("; ").reduce((r, v) => {
+    const parts = v.split("=");
+    return parts[0] === name ? decodeURIComponent(parts[1]) : r;
+  }, "");
+};
+
 export default function ProviderPage() {
   const params = useParams();
   const router = useRouter();
   const productSlug = params.name;
-  const product = products[productSlug];
 
+  const [provider, setProvider] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [selectedUserCount, setSelectedUserCount] = useState(null);
   const [activeTab, setActiveTab] = useState("tersedia"); // "tersedia" or "penuh"
   const [showPopup, setShowPopup] = useState(false);
@@ -274,23 +298,71 @@ export default function ProviderPage() {
     name: "",
     phone: "",
   });
+  const [ruangan, setRuangan] = useState([]);
 
-  // Redirect if product not found
+  // Fetch provider data from database
   useEffect(() => {
-    if (!product) {
-      router.push("/");
-      return;
-    }
+    const fetchProvider = async () => {
+      setLoading(true);
 
-    // Set default selected user count to recommended option
-    const recommended = product.pricing.find(p => p.recommended);
-    if (recommended) {
-      setSelectedUserCount(recommended.users);
-    } else {
-      setSelectedUserCount(product.pricing[0].users);
-    }
+      const { data, error } = await supabase
+        .from('provider')
+        .select('*')
+        .eq('slug', productSlug)
+        .single();
 
-    // Load saved info from cookies
+      if (error || !data) {
+        console.error('Error fetching provider:', error);
+        router.push('/');
+        return;
+      }
+
+      setProvider(data);
+
+      // Set default selected user count to max_user
+      setSelectedUserCount(data.max_user);
+
+      setLoading(false);
+    };
+
+    fetchProvider();
+  }, [productSlug, router]);
+
+  // Fetch ruangan for this provider
+  useEffect(() => {
+    if (!provider) return;
+
+    const fetchRuangan = async () => {
+      const { data, error } = await supabase
+        .from('ruangan')
+        .select(`
+          *,
+          ruangan_users (
+            id,
+            slot_number,
+            cookie_user_id,
+            payment_id,
+            cookie_user (
+              full_name
+            )
+          )
+        `)
+        .eq('provider_id', provider.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching ruangan:', error);
+        return;
+      }
+
+      setRuangan(data || []);
+    };
+
+    fetchRuangan();
+  }, [provider]);
+
+  // Load saved info from cookies
+  useEffect(() => {
     const savedName = getCookie("user_name");
     const savedPhone = getCookie("user_phone");
 
@@ -301,34 +373,45 @@ export default function ProviderPage() {
       });
       setSaveInfo(true);
     }
-  }, [product, router]);
+  }, []);
 
-  if (!product) {
-    return null;
+  if (loading || !provider) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-center">
+          <div className="text-[#092A4D] text-lg">Loading...</div>
+        </div>
+      </div>
+    );
   }
 
-  // Get current price based on selected user count
-  const currentPricing = product.pricing.find(p => p.users === selectedUserCount) || product.pricing[0];
+  // Calculate current price based on selected user count using centralized utility
+  const pricePerUser = calculatePriceFormatted(provider.base_price, selectedUserCount, provider.max_user, provider.admin_price).replace('Rp', '');
 
-  // Filter groups based on selected user count and tab
-  const filteredGroups = product.groups
-    .filter(group => group.userCount === selectedUserCount)
-    .filter(group => activeTab === "tersedia" ? !group.isFull : group.isFull)
+  // Get full pricing breakdown for selected user count
+  const pricingBreakdown = getPricingBreakdown(provider.base_price, selectedUserCount, provider.max_user, provider.admin_price);
+
+  // Generate pricing options based on provider's min_user and max_user
+  const pricingOptions = [];
+  for (let users = provider.min_user; users <= provider.max_user; users++) {
+    pricingOptions.push({
+      users,
+      price: calculatePriceFormatted(provider.base_price, users, provider.max_user, provider.admin_price).replace('Rp', ''),
+      duration: provider.duration,
+      recommended: users === provider.max_user // Recommend max users for best price
+    });
+  }
+
+  // Filter ruangan based on active tab
+  const filteredRuangan = ruangan
+    .filter(room => {
+      if (activeTab === "tersedia") {
+        return room.status === "tersedia";
+      } else {
+        return room.status === "penuh" || room.status === "aktif";
+      }
+    })
     .slice(0, 10); // Show only latest 10
-
-  // Cookie helpers
-  const setCookie = (name, value, days = 365) => {
-    const expires = new Date(Date.now() + days * 864e5).toUTCString();
-    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/`;
-  };
-
-  const getCookie = (name) => {
-    if (typeof document === "undefined") return "";
-    return document.cookie.split("; ").reduce((r, v) => {
-      const parts = v.split("=");
-      return parts[0] === name ? decodeURIComponent(parts[1]) : r;
-    }, "");
-  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -357,11 +440,14 @@ export default function ProviderPage() {
 
     // Prepare order data
     const orderData = {
-      product: product.name,
+      product: provider.name,
       productSlug: productSlug,
+      providerId: provider.id,
       userCount: selectedUserCount,
-      pricePerUser: currentPricing.price,
-      totalPrice: currentPricing.price,
+      pricePerUser: pricePerUser,
+      totalPrice: pricePerUser,
+      basePrice: provider.base_price,
+      adminPrice: provider.admin_price,
       customer: formData,
       timestamp: new Date().toISOString(),
     };
@@ -416,25 +502,33 @@ export default function ProviderPage() {
         <div className="mx-auto max-w-6xl px-6">
           <div className="flex flex-col md:flex-row items-center gap-8">
             {/* Product Icon/Logo */}
-            <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-[#3D73B1] to-[#092A4D] text-5xl shadow-lg">
-              {product.icon}
+            <div className="relative h-24 w-24 rounded-3xl bg-white border-2 border-[#DBE3F0] p-4 shadow-lg overflow-hidden">
+              {getImageUrl(provider.icon) && (
+                <Image
+                  src={getImageUrl(provider.icon)}
+                  alt={provider.name}
+                  fill
+                  sizes="96px"
+                  className="object-contain"
+                />
+              )}
             </div>
 
             {/* Product Info */}
             <div className="flex-1 text-center md:text-left">
               <h1 className="text-4xl font-bold text-[#092A4D] md:text-5xl">
-                {product.name}
+                {provider.name}
               </h1>
 
               {/* Tags */}
               <div className="mt-4 flex flex-wrap justify-center md:justify-start gap-3">
                 <span className="inline-flex items-center gap-2 rounded-full bg-[#DBE3F0]/50 px-4 py-2 text-sm font-semibold text-[#092A4D]">
                   <Tag size={16} />
-                  Rp{currentPricing.price}/user
+                  Rp{pricePerUser}/user
                 </span>
                 <span className="inline-flex items-center gap-2 rounded-full bg-[#DBE3F0]/50 px-4 py-2 text-sm font-semibold text-[#092A4D]">
                   <Calendar size={16} />
-                  {currentPricing.duration}
+                  {provider.duration}
                 </span>
                 <span className="inline-flex items-center gap-2 rounded-full bg-[#DBE3F0]/50 px-4 py-2 text-sm font-semibold text-[#092A4D]">
                   <Users size={16} />
@@ -457,23 +551,27 @@ export default function ProviderPage() {
                 Deskripsi Produk
               </h2>
               <p className="text-[#092A4D]/80 leading-relaxed mb-8">
-                {product.description}
+                {provider.description || 'Layanan premium dengan harga terjangkau melalui sistem patungan.'}
               </p>
 
               {/* Features */}
-              <h3 className="text-xl font-bold text-[#092A4D] mb-4">
-                Fitur Unggulan
-              </h3>
-              <ul className="space-y-3 mb-8">
-                {product.features.map((feature, idx) => (
-                  <li key={idx} className="flex items-start gap-3">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#3D73B1]/10 text-[#3D73B1] flex-shrink-0 mt-0.5">
-                      ✓
-                    </span>
-                    <span className="text-[#092A4D]/80">{feature}</span>
-                  </li>
-                ))}
-              </ul>
+              {provider.features && Array.isArray(provider.features) && provider.features.length > 0 && (
+                <>
+                  <h3 className="text-xl font-bold text-[#092A4D] mb-4">
+                    Fitur Unggulan
+                  </h3>
+                  <ul className="space-y-3 mb-8">
+                    {provider.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-start gap-3">
+                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#3D73B1]/10 text-[#3D73B1] flex-shrink-0 mt-0.5">
+                          ✓
+                        </span>
+                        <span className="text-[#092A4D]/80">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
 
               {/* Skema Harga */}
               <h3 className="text-xl font-bold text-[#092A4D] mb-4">
@@ -483,10 +581,10 @@ export default function ProviderPage() {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium text-[#092A4D]/80">
-                      Harga Provider ({selectedUserCount} user)
+                      Harga Provider
                     </span>
                     <span className="text-sm font-semibold text-[#092A4D]">
-                      Rp{currentPricing.originalPrice}
+                      Rp{provider.base_price.toLocaleString('id-ID')}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
@@ -502,7 +600,7 @@ export default function ProviderPage() {
                       Harga Patungan
                     </span>
                     <span className="text-sm font-semibold text-[#092A4D]">
-                      Rp{currentPricing.originalPrice} ÷ {selectedUserCount} = Rp{currentPricing.price}
+                      Rp{provider.base_price.toLocaleString('id-ID')} ÷ {selectedUserCount} = {pricingBreakdown.basePricePerUserFormatted}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
@@ -510,7 +608,12 @@ export default function ProviderPage() {
                       Biaya Admin
                     </span>
                     <span className="text-sm font-semibold text-[#092A4D]">
-                      Rp0
+                      {pricingBreakdown.scaledAdminPriceFormatted}
+                      {pricingBreakdown.increasePercentage > 0 && (
+                        <span className="text-xs text-[#092A4D]/60 ml-1">
+                          (+{pricingBreakdown.increasePercentage}%)
+                        </span>
+                      )}
                     </span>
                   </div>
                   <div className="h-px bg-[#092A4D]/10"></div>
@@ -519,7 +622,7 @@ export default function ProviderPage() {
                       Harga Paket Perbulan
                     </span>
                     <span className="text-xl font-bold text-[#3D73B1]">
-                      Rp{currentPricing.price}
+                      {pricingBreakdown.totalPriceFormatted}
                     </span>
                   </div>
                 </div>
@@ -535,7 +638,7 @@ export default function ProviderPage() {
 
                 {/* User Count Selector */}
                 <div className="space-y-2 mb-4">
-                  {product.pricing.map((option) => (
+                  {pricingOptions.map((option) => (
                     <button
                       key={option.users}
                       onClick={() => setSelectedUserCount(option.users)}
@@ -552,7 +655,7 @@ export default function ProviderPage() {
                       )}
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-sm font-semibold text-[#092A4D]">
-                          {option.users} User ({option.users === 2 ? "300 Prompt" : option.users === 3 ? "200 Prompt" : "Unlimited"})
+                          {option.users} User
                         </span>
                       </div>
                       <div className="text-lg font-bold text-[#3D73B1]">
@@ -577,7 +680,7 @@ export default function ProviderPage() {
                       Harga per user:
                     </span>
                     <span className="text-sm font-semibold text-[#092A4D]">
-                      Rp{currentPricing.price}
+                      Rp{pricePerUser}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
@@ -585,7 +688,7 @@ export default function ProviderPage() {
                       Total Biaya:
                     </span>
                     <span className="text-xl font-bold text-[#3D73B1]">
-                      Rp{currentPricing.price}
+                      Rp{pricePerUser}
                     </span>
                   </div>
                 </div>
@@ -640,85 +743,90 @@ export default function ProviderPage() {
 
               {/* Groups List */}
               <div className="space-y-4">
-                {filteredGroups.length > 0 ? (
-                  filteredGroups.map((group) => (
-                    <div
-                      key={group.id}
-                      className="rounded-2xl border-2 border-[#DBE3F0]/30 bg-[#F9F7F8] p-6 transition-all hover:border-[#3D73B1]/30 hover:shadow-md"
-                    >
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center gap-4">
-                          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#3D73B1] to-[#092A4D] text-xl font-bold text-white shadow-md">
-                            {group.id}
-                          </div>
-                          <div>
-                            <div className="font-semibold text-[#092A4D] text-lg">
-                              {group.name}
-                            </div>
-                            <div className="text-sm text-[#092A4D]/60">
-                              Rp{group.pricePerUser}/user • {group.userCount} user
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-sm text-[#092A4D]/60 mb-1">
-                            Slot tersedia
-                          </div>
-                          <div className="text-lg font-bold text-[#3D73B1]">
-                            {group.availableSlots}/{group.totalSlots}
-                          </div>
-                        </div>
-                      </div>
+                {filteredRuangan.length > 0 ? (
+                  filteredRuangan.map((room) => {
+                    const members = room.ruangan_users || [];
+                    const availableSlots = provider.max_user - room.user_count;
 
-                      {/* Members List */}
-                      <div className="rounded-xl bg-white border border-[#DBE3F0]/30 p-4 mb-4">
-                        <div className="mb-3 text-xs font-semibold text-[#092A4D]/60">
-                          Anggota ({group.totalSlots - group.availableSlots}/{group.totalSlots}):
-                        </div>
-                        <div className="space-y-2">
-                          {group.members.map((member, idx) => (
-                            <div
-                              key={idx}
-                              className="flex items-center gap-2 text-sm"
-                            >
-                              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-green-500 text-xs font-semibold text-white">
-                                {idx + 1}
-                              </span>
-                              <span className="text-[#092A4D]">{member}</span>
-                              <span className="text-green-500">✓</span>
+                    return (
+                      <div
+                        key={room.id}
+                        className="rounded-2xl border-2 border-[#DBE3F0]/30 bg-[#F9F7F8] p-6 transition-all hover:border-[#3D73B1]/30 hover:shadow-md"
+                      >
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-center gap-4">
+                            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#3D73B1] to-[#092A4D] text-xl font-bold text-white shadow-md">
+                              {room.id.slice(0, 4)}
                             </div>
-                          ))}
-                          {Array.from({ length: group.availableSlots }).map(
-                            (_, idx) => (
+                            <div>
+                              <div className="font-semibold text-[#092A4D] text-lg">
+                                Room #{room.id.slice(0, 8)}
+                              </div>
+                              <div className="text-sm text-[#092A4D]/60">
+                                Rp{pricePerUser}/user • {provider.max_user} user max
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-sm text-[#092A4D]/60 mb-1">
+                              Slot tersedia
+                            </div>
+                            <div className="text-lg font-bold text-[#3D73B1]">
+                              {availableSlots}/{provider.max_user}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Members List */}
+                        <div className="rounded-xl bg-white border border-[#DBE3F0]/30 p-4 mb-4">
+                          <div className="mb-3 text-xs font-semibold text-[#092A4D]/60">
+                            Anggota ({room.user_count}/{provider.max_user}):
+                          </div>
+                          <div className="space-y-2">
+                            {members.map((member, idx) => (
+                              <div
+                                key={member.id}
+                                className="flex items-center gap-2 text-sm"
+                              >
+                                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-green-500 text-xs font-semibold text-white">
+                                  {member.slot_number}
+                                </span>
+                                <span className="text-[#092A4D]">
+                                  {member.cookie_user?.full_name || `User ${member.slot_number}`}
+                                </span>
+                                <span className="text-green-500">✓</span>
+                              </div>
+                            ))}
+                            {Array.from({ length: availableSlots }).map((_, idx) => (
                               <div
                                 key={`empty-${idx}`}
                                 className="flex items-center gap-2 text-sm"
                               >
                                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#DBE3F0]/50 border border-[#DBE3F0] text-xs font-semibold text-[#092A4D]/40">
-                                  {group.totalSlots - group.availableSlots + idx + 1}
+                                  {room.user_count + idx + 1}
                                 </span>
                                 <span className="italic text-[#092A4D]/40">
                                   Tersedia
                                 </span>
                               </div>
-                            )
-                          )}
+                            ))}
+                          </div>
                         </div>
-                      </div>
 
-                      {!group.isFull && (
-                        <button
-                          onClick={handleOpenPopup}
-                          className="w-full rounded-full bg-gradient-to-r from-[#3D73B1] to-[#092A4D] px-6 py-3 text-center font-semibold text-white transition-all hover:opacity-90 hover:shadow-lg"
-                        >
-                          Gabung Ruangan
-                        </button>
-                      )}
-                    </div>
-                  ))
+                        {room.status === "tersedia" && (
+                          <button
+                            onClick={handleOpenPopup}
+                            className="w-full rounded-full bg-gradient-to-r from-[#3D73B1] to-[#092A4D] px-6 py-3 text-center font-semibold text-white transition-all hover:opacity-90 hover:shadow-lg"
+                          >
+                            Gabung Ruangan
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })
                 ) : (
                   <div className="text-center py-12 text-[#092A4D]/60">
-                    Tidak ada ruangan {activeTab} untuk {selectedUserCount} user
+                    Belum ada ruangan {activeTab === "tersedia" ? "tersedia" : "penuh"}
                   </div>
                 )}
               </div>
@@ -735,7 +843,7 @@ export default function ProviderPage() {
 
                 {/* User Count Selector */}
                 <div className="space-y-2 mb-4">
-                  {product.pricing.map((option) => (
+                  {pricingOptions.map((option) => (
                     <button
                       key={option.users}
                       onClick={() => setSelectedUserCount(option.users)}
@@ -752,7 +860,7 @@ export default function ProviderPage() {
                       )}
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-sm font-semibold text-[#092A4D]">
-                          {option.users} User ({option.users === 2 ? "300 Prompt" : option.users === 3 ? "200 Prompt" : "Unlimited"})
+                          {option.users} User
                         </span>
                       </div>
                       <div className="text-lg font-bold text-[#3D73B1]">
@@ -777,7 +885,7 @@ export default function ProviderPage() {
                       Harga per user:
                     </span>
                     <span className="text-sm font-semibold text-[#092A4D]">
-                      Rp{currentPricing.price}
+                      Rp{pricePerUser}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
@@ -785,7 +893,7 @@ export default function ProviderPage() {
                       Total Biaya:
                     </span>
                     <span className="text-xl font-bold text-[#3D73B1]">
-                      Rp{currentPricing.price}
+                      Rp{pricePerUser}
                     </span>
                   </div>
                 </div>

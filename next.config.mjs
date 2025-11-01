@@ -8,39 +8,15 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "images.ctfassets.net",
+        hostname: "gkmoljficwdyeqnyvfpn.supabase.co",
       },
       {
         protocol: "https",
-        hostname: "storage.googleapis.com",
-      },
-      {
-        protocol: "https",
-        hostname: "www.gstatic.com",
-      },
-      {
-        protocol: "https",
-        hostname: "static.canva.com",
+        hostname: "cdn.cdnlogo.com",
       },
       {
         protocol: "https",
         hostname: "upload.wikimedia.org",
-      },
-      {
-        protocol: "https",
-        hostname: "cnbl-cdn.bamgrid.com",
-      },
-      {
-        protocol: "https",
-        hostname: "www.viu.com",
-      },
-      {
-        protocol: "https",
-        hostname: "music.youtube.com",
-      },
-      {
-        protocol: "https",
-        hostname: "www.adobe.com",
       },
     ],
   },
