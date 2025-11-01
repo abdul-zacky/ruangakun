@@ -844,9 +844,65 @@ export default function ProviderPage() {
                       </div>
                     );
                   })
+                ) : activeTab === "tersedia" ? (
+                  // Show empty room placeholder when no tersedia rooms exist
+                  <div className="rounded-2xl border-2 border-[#DBE3F0]/30 bg-[#F9F7F8] p-6 transition-all hover:border-[#3D73B1]/30 hover:shadow-md">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-4">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#3D73B1] to-[#092A4D] text-xl font-bold text-white shadow-md">
+                          <Users className="w-7 h-7" />
+                        </div>
+                        <div>
+                          <div className="font-semibold text-[#092A4D] text-lg">
+                            Ruangan Baru
+                          </div>
+                          <div className="text-sm text-[#092A4D]/60">
+                            {pricePerUser}/user • {selectedUserCount} user
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm text-[#092A4D]/60 mb-1">
+                          Slot tersedia
+                        </div>
+                        <div className="text-lg font-bold text-[#3D73B1]">
+                          {selectedUserCount}/{selectedUserCount}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Empty Members List */}
+                    <div className="rounded-xl bg-white border border-[#DBE3F0]/30 p-4 mb-4">
+                      <div className="mb-3 text-xs font-semibold text-[#092A4D]/60">
+                        Anggota (0/{selectedUserCount}):
+                      </div>
+                      <div className="space-y-2">
+                        {Array.from({ length: selectedUserCount }).map((_, idx) => (
+                          <div
+                            key={`empty-${idx}`}
+                            className="flex items-center gap-2 text-sm"
+                          >
+                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#DBE3F0]/50 border border-[#DBE3F0] text-xs font-semibold text-[#092A4D]/40">
+                              {idx + 1}
+                            </span>
+                            <span className="italic text-[#092A4D]/40">
+                              Tersedia
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={handleOpenPopup}
+                      className="w-full rounded-full bg-gradient-to-r from-[#3D73B1] to-[#092A4D] px-6 py-3 text-center font-semibold text-white transition-all hover:opacity-90 hover:shadow-lg"
+                    >
+                      Buat Ruangan & Gabung
+                    </button>
+                  </div>
                 ) : (
                   <div className="text-center py-12 text-[#092A4D]/60">
-                    Belum ada ruangan {activeTab === "tersedia" ? "tersedia" : "penuh"}
+                    Belum ada ruangan penuh
                   </div>
                 )}
               </div>
